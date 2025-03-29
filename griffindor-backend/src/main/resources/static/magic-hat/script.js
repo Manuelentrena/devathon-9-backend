@@ -19,16 +19,30 @@ document.getElementById("connectBtn").addEventListener("click", () => {
                 document.getElementById("numPlayersMessage").innerHTML = `<div class="json-container">${JSON.stringify(JSON.parse(message.body), null, 2)}</div>`;
             });
 
-            //TODO: poner como boton click
+            client.subscribe("/user/queue/session-id", (message) => {
+                const { session_id } = JSON.parse(message.body);
+                console.log({session_id})
+                const sessionIdInput = document.getElementById("sessionIdDisplay");
+                sessionIdInput.value = session_id;
+            });
+
             client.publish({
                 destination: "/app/num-players",
                 body: "{}"
             });
+
+            client.publish({
+                destination: "/app/session-id",
+                body: "{}"
+            });
+
         },
         onDisconnect: () => {
             updateButtonStyles(false);
             document.getElementById("frameBox").innerHTML = `<div class="json-container">Frame will appear here</div>`;
             document.getElementById("numPlayersMessage").innerHTML = `<div class="json-container">Waiting for data...</div>`;
+            // 🔁 Reset session id
+            document.getElementById("sessionIdDisplay").value = "--- no session id ---";
         },
         onStompError: (frame) => {
             document.getElementById("frameBox").innerHTML = `<div class="json-container">Error: ${frame.headers["message"]}</div>`;
