@@ -1,8 +1,13 @@
 package com.devathon.griffindor_backend.controllers;
 
+import com.devathon.griffindor_backend.config.WebSocketRoutes;
+import com.devathon.griffindor_backend.dtos.SessionIdResponseDto;
 import com.devathon.griffindor_backend.enums.PlayerSessionState;
 import com.devathon.griffindor_backend.services.PlayerService;
 import org.springframework.context.event.EventListener;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
@@ -27,6 +32,13 @@ public class GameSessionController {
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         String sessionId = getSessionIdFromEvent(event);
         playerService.removePlayer(sessionId);
+    }
+
+    @MessageMapping(WebSocketRoutes.SESSION_ID)
+    @SendToUser(WebSocketRoutes.QUEUE_SESSION_ID)
+    public SessionIdResponseDto sendPlayerCount(String message, SimpMessageHeaderAccessor headerAccessor) {
+        String sessionId = headerAccessor.getSessionId();
+        return new SessionIdResponseDto(sessionId);
     }
 
     private String getSessionIdFromEvent(SessionConnectedEvent event) {
