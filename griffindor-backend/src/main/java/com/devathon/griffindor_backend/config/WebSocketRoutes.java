@@ -6,8 +6,11 @@ public class WebSocketRoutes {
     // Prefix
     public static final String GET_PREFIX = "/app";
     public static final String TOPIC_PREFIX = "/topic";
+    public static final String QUEUE_PREFIX = "/queue";
+    public static final String USER_PREFIX = "/user";
 
     // Actions
+    public static final String SESSION_ID = "/session-id";
     public static final String NUM_PLAYERS = "/num-players";
     public static final String LIST_PLAYERS = "/list-players";
 
@@ -18,4 +21,7 @@ public class WebSocketRoutes {
     // Topic Paths
     public static final String TOPIC_NUM_PLAYERS = TOPIC_PREFIX + NUM_PLAYERS;
     public static final String TOPIC_LIST_PLAYERS = TOPIC_PREFIX + LIST_PLAYERS;
+
+    // Queue Paths
+    public static final String QUEUE_SESSION_ID = QUEUE_PREFIX + SESSION_ID;
 }
