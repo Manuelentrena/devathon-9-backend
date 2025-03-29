@@ -1,6 +1,6 @@
 package com.devathon.griffindor_backend.events;
 
-import com.devathon.griffindor_backend.dtos.PlayerCountDto;
+import com.devathon.griffindor_backend.dtos.PlayerCountResponseDto;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -22,8 +22,8 @@ public class PlayerCountUpdateEvent {
         return destination;
     }
 
-    public PlayerCountDto toDto() {
-        return new PlayerCountDto(playerCount);
+    public PlayerCountResponseDto toDto() {
+        return new PlayerCountResponseDto(playerCount);
     }
 
     public String toJson() {
