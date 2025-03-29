@@ -1,0 +1,24 @@
+package com.devathon.griffindor_backend.services;
+
+import com.devathon.griffindor_backend.enums.PlayerSessionState;
+import com.devathon.griffindor_backend.models.Player;
+import java.util.Collection;
+
+public interface PlayerService {
+
+    void addPlayer(String sessionId, String name, String house, PlayerSessionState sessionState);
+
+    void removePlayer(String sessionId);
+
+    void updatePlayerInfo(String sessionId, String name, String house);
+
+    void updatePlayerSessionState(String sessionId, PlayerSessionState state);
+
+    int getActivePlayerCount();
+
+    void publishPlayerCountUpdate();
+
+    void printAllPlayers();
+
+    Collection<Player> getAllPlayers();
+}
