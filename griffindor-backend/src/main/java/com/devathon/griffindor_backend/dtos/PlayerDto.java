@@ -2,6 +2,11 @@ package com.devathon.griffindor_backend.dtos;
 
 import com.devathon.griffindor_backend.models.Player;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class PlayerDto {
     private final String sessionId;
     private final String name;
@@ -13,22 +18,6 @@ public class PlayerDto {
         this.name = player.getName();
         this.house = player.getHouse();
         this.sessionStatus = player.getSessionStatus().name();
-    }
-
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getHouse() {
-        return house;
-    }
-
-    public String getSessionStatus() {
-        return sessionStatus;
     }
 
 }

@@ -2,6 +2,13 @@ package com.devathon.griffindor_backend.models;
 
 import com.devathon.griffindor_backend.enums.PlayerSessionState;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
 public class Player {
 
     private final String sessionId;
@@ -11,25 +18,6 @@ public class Player {
     private String house;
 
     private PlayerSessionState sessionState;
-
-    public Player(String sessionId, String name, String house, PlayerSessionState sessionState) {
-        this.sessionId = sessionId;
-        this.name = name;
-        this.house = house;
-        this.sessionState = sessionState;
-    }
-
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getHouse() {
-        return house;
-    }
 
     public PlayerSessionState getSessionStatus() {
         return sessionState;
@@ -47,15 +35,4 @@ public class Player {
         return sessionState == PlayerSessionState.FIGHTING;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setHouse(String house) {
-        this.house = house;
-    }
-
-    public void setSessionState(PlayerSessionState sessionState) {
-        this.sessionState = sessionState;
-    }
 }
