@@ -3,7 +3,6 @@ package com.devathon.griffindor_backend.services;
 import com.devathon.griffindor_backend.config.WebSocketRoutes;
 import com.devathon.griffindor_backend.enums.PlayerSessionState;
 import com.devathon.griffindor_backend.events.PlayerCountUpdateEvent;
-import com.devathon.griffindor_backend.events.PlayerListUpdateEvent;
 import com.devathon.griffindor_backend.models.Player;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,12 +22,12 @@ public class PlayerService {
     public void addPlayer(String sessionId, String name, String house, PlayerSessionState sessionState) {
         Player player = new Player(sessionId, name, house, sessionState);
         players.put(sessionId, player);
-        callAllEventToPublishFromPlayers();
+        publishPlayerCountUpdate();
     }
 
     public void removePlayer(String sessionId) {
         players.remove(sessionId);
-        callAllEventToPublishFromPlayers();
+        publishPlayerCountUpdate();
     }
 
     public void updatePlayerInfo(String sessionId, String name, String house) {
@@ -50,18 +49,8 @@ public class PlayerService {
         return players.size();
     }
 
-    private void callAllEventToPublishFromPlayers() {
-        publishPlayerCountUpdate();
-        publishPlayerListUpdate();
-    }
-
     public void publishPlayerCountUpdate() {
         eventPublisher.publishEvent(new PlayerCountUpdateEvent(players.size(), WebSocketRoutes.TOPIC_NUM_PLAYERS));
-    }
-
-    public void publishPlayerListUpdate() {
-        eventPublisher
-                .publishEvent(new PlayerListUpdateEvent(this.getAllPlayers(), WebSocketRoutes.TOPIC_LIST_PLAYERS));
     }
 
     public void printAllPlayers() {
