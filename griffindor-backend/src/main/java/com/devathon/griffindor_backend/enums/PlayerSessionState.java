@@ -1,7 +1,8 @@
 package com.devathon.griffindor_backend.enums;
 
 public enum PlayerSessionState {
-    ACTIVE,
+    CONNECT,
+    DISCONNECT,
     WAITING,
     FIGHTING
 }

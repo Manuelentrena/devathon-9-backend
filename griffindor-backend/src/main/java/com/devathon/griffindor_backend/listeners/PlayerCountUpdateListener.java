@@ -1,6 +1,6 @@
 package com.devathon.griffindor_backend.listeners;
 
-import com.devathon.griffindor_backend.events.PlayerCountUpdateEvent;
+import com.devathon.griffindor_backend.events.PlayerConnectedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ public class PlayerCountUpdateListener {
     }
 
     @EventListener
-    public void handlePlayerCountUpdateEvent(PlayerCountUpdateEvent event) {
+    public void handlePlayerCountUpdateEvent(PlayerConnectedEvent event) {
         messagingTemplate.convertAndSend(event.getDestination(), event.toDto());
     }
 }

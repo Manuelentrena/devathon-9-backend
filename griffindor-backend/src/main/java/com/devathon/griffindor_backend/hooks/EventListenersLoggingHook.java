@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
-import com.devathon.griffindor_backend.events.PlayerCountUpdateEvent;
+import com.devathon.griffindor_backend.events.PlayerConnectedEvent;
 
 @Aspect
 @Component
@@ -31,9 +31,9 @@ public class EventListenersLoggingHook {
         log.append("📝 Name Method: ").append(methodName).append("\n");
         log.append("📢 Event Executed: ").append(eventName).append("\n");
 
-        if (event instanceof PlayerCountUpdateEvent playerCountEvent) {
-            log.append("🚀 Output Path: ").append(playerCountEvent.getDestination()).append("\n");
-            log.append("📩 Message:\n").append(playerCountEvent.toJson()).append("\n");
+        if (event instanceof PlayerConnectedEvent playerConnectedEvent) {
+            log.append("🚀 Output Path: ").append(playerConnectedEvent.getDestination()).append("\n");
+            log.append("📩 Message:\n").append(playerConnectedEvent.toJson()).append("\n");
         }
 
         if (event instanceof SessionConnectedEvent connectedEvent) {
