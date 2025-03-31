@@ -43,9 +43,12 @@
 
                 </div>
                 <div class="input-container">
-                    <label for="sessionIdDisplay">SessionId</label>
-                    <input type="text" id="sessionIdDisplay" value="--- no session id ---" />
-                </div>
+                    <div class="label-row">
+                        <label for="tokenIdDisplay">Topic /user/queue/token-id</label>
+                        <button class="copy-button" onclick="copyToken()">📋 Copiar</button>
+                    </div>
+                    <textarea id="tokenIdDisplay" rows="4" readonly>--- no token id ---</textarea>
+                </div>               
                 <div class="buttons">
                     <button id="connectBtn">Connect</button>
                     <button id="disconnectBtn" disabled class="disabled">Disconnect</button>
@@ -77,6 +80,25 @@
                     <label for="topicInput">Message</label>
                     <div id="numPlayersMessage">
                         <div class="json-container">Waiting for data...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header" onclick="toggleCard('errors')">
+                <span>❌ ERRORS</span>
+                <button id="errorsToggle">+</button>
+            </div>
+            <div class="card-content" id="errorsBox">
+                <div class="input-container">
+                    <label for="topicInput">Topic</label>
+                    <input type="text" id="topicInput" value="/user/queue/errors" readonly />
+                </div>
+                <div class="input-container">
+                    <label for="topicInput">Error</label>
+                    <div id="errorsMessage">
+                        <div class="json-container">Waiting for error...</div>
                     </div>
                 </div>
             </div>
