@@ -31,4 +31,9 @@ public class WebSocketRoutes {
     public static final String QUEUE_TOKEN_ID = QUEUE_PREFIX + TOKEN_ID;
     public static final String QUEUE_REGISTER_USER = QUEUE_PREFIX + REGISTER_USER;
     public static final String QUEUE_ERRORS = QUEUE_PREFIX + ERRORS;
+    public static final String QUEUE_LIST_PLAYERS = QUEUE_PREFIX + LIST_PLAYERS;
+
+    // Queue Paths Subscriber
+    public static final String USER_QUEUE_LIST_PLAYERS = USER_PREFIX + QUEUE_PREFIX + LIST_PLAYERS;
+
 }

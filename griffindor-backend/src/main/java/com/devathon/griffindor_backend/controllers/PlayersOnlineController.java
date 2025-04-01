@@ -19,14 +19,8 @@ public class PlayersOnlineController {
         this.playerService = playerService;
     }
 
-    @MessageMapping(WebSocketRoutes.NUM_PLAYERS)
-    public void sendPlayerCount(String message, SimpMessageHeaderAccessor headerAccessor) {
-        playerService.publishPlayerConnected();
-    }
-
     @MessageMapping(WebSocketRoutes.REGISTER_USER)
     @SendToUser(WebSocketRoutes.QUEUE_REGISTER_USER)
-    // EVENT: list user
     public SucessResponseDto registerPlayer(PlayerRegisterDto playerRegisterDto,
             SimpMessageHeaderAccessor headerAccessor) {
 

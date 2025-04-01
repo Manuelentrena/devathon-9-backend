@@ -16,16 +16,22 @@ public interface PlayerService {
 
     void updatePlayerSessionState(String sessionId, PlayerSessionState state);
 
-    int getActivePlayerCount();
+    int getAllPlayerCount();
 
-    void publishPlayerConnected();
+    int getNumPlayerConnected();
 
     void printAllPlayers();
 
     Collection<Player> getAllPlayers();
 
+    Collection<Player> getAllPlayersExcept(String sessionIdToExclude);
+
     boolean existsBySessionId(String sessionId);
 
     void reconnectFromPreviousSession(String oldSessionId, String newSessionId, String newToken);
+
+    void enqueuePlayersConnectedEvent(String sessionId);
+
+    void enqueuePlayersListEvent(String sessionId);
 
 }

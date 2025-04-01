@@ -14,6 +14,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
 @Controller
 public class GameSessionController {
@@ -38,6 +39,22 @@ public class GameSessionController {
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         String sessionId = getSessionIdFromEvent(event);
         playerService.updatePlayerSessionState(sessionId, PlayerSessionState.DISCONNECT);
+    }
+
+    @EventListener
+    public void handleSubscribeEvent(SessionSubscribeEvent event) {
+        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+
+        String sessionId = headerAccessor.getSessionId();
+        String destination = headerAccessor.getDestination();
+
+        if (WebSocketRoutes.TOPIC_NUM_PLAYERS.equals(destination)) {
+            playerService.enqueuePlayersConnectedEvent(sessionId);
+
+        }
+        if (WebSocketRoutes.USER_QUEUE_LIST_PLAYERS.equals(destination)) {
+            playerService.enqueuePlayersListEvent(sessionId);
+        }
     }
 
     @MessageMapping(WebSocketRoutes.TOKEN_ID)

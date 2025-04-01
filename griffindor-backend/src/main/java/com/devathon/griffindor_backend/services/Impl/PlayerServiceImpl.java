@@ -1,31 +1,37 @@
 package com.devathon.griffindor_backend.services.Impl;
 
+import com.devathon.griffindor_backend.Queues.PlayersConnectedQueue;
+import com.devathon.griffindor_backend.Queues.PlayersListQueue;
 import com.devathon.griffindor_backend.config.WebSocketRoutes;
 import com.devathon.griffindor_backend.enums.PlayerSessionState;
-import com.devathon.griffindor_backend.events.PlayerConnectedEvent;
+import com.devathon.griffindor_backend.events.PlayersConnectedEvent;
+import com.devathon.griffindor_backend.events.PlayersListEvent;
 import com.devathon.griffindor_backend.models.Player;
 import com.devathon.griffindor_backend.services.PlayerService;
-
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PlayerServiceImpl implements PlayerService {
 
-    private final ApplicationEventPublisher eventPublisher;
+    private final PlayersConnectedQueue playersConnectedQueue;
+    private final PlayersListQueue playersListQueue;
     private final ConcurrentHashMap<String, Player> players = new ConcurrentHashMap<>();
 
-    public PlayerServiceImpl(ApplicationEventPublisher eventPublisher) {
-        this.eventPublisher = eventPublisher;
+    public PlayerServiceImpl(PlayersConnectedQueue playersConnectedQueue, PlayersListQueue playersListQueue) {
+        this.playersConnectedQueue = playersConnectedQueue;
+        this.playersListQueue = playersListQueue;
     }
+
+    /* SETTER */
 
     public void addPlayer(String sessionId, String name, String house, PlayerSessionState sessionState,
             String tokenId) {
         Player player = new Player(sessionId, name, house, sessionState, tokenId);
         players.put(sessionId, player);
-        publishPlayerConnected();
+        enqueuePlayersConnectedEvent(sessionId);
+        enqueuePlayersListEvent(sessionId);
     }
 
     public void addToken(String sessionId, String tokenId) {
@@ -37,7 +43,8 @@ public class PlayerServiceImpl implements PlayerService {
 
     public void removePlayer(String sessionId) {
         players.remove(sessionId);
-        publishPlayerConnected();
+        enqueuePlayersConnectedEvent(sessionId);
+        enqueuePlayersListEvent(sessionId);
     }
 
     public void updatePlayerInfo(String sessionId, String name, String house) {
@@ -46,6 +53,8 @@ public class PlayerServiceImpl implements PlayerService {
             player.setName(name);
             player.setHouse(house);
         }
+        enqueuePlayersConnectedEvent(sessionId);
+        enqueuePlayersListEvent(sessionId);
     }
 
     public void updatePlayerSessionState(String sessionId, PlayerSessionState state) {
@@ -53,18 +62,34 @@ public class PlayerServiceImpl implements PlayerService {
         if (player != null) {
             player.setSessionState(state);
         }
+        enqueuePlayersConnectedEvent(sessionId);
+        enqueuePlayersListEvent(sessionId);
     }
 
-    public int getActivePlayerCount() {
+    public void reconnectFromPreviousSession(String oldSessionId, String newSessionId, String newToken) {
+        Player player = players.remove(oldSessionId);
+
+        if (player != null) {
+            // TODO: validate player not repeat
+            player.setSessionId(newSessionId);
+            player.setTokenId(newToken);
+            player.setSessionState(PlayerSessionState.CONNECT);
+            players.put(newSessionId, player);
+        }
+        enqueuePlayersConnectedEvent(newSessionId);
+        enqueuePlayersListEvent(newSessionId);
+    }
+
+    /* GETTER */
+
+    public int getAllPlayerCount() {
         return players.size();
     }
 
-    public void publishPlayerConnected() {
-        int connectedPlayers = (int) players.values().stream()
+    public int getNumPlayerConnected() {
+        return (int) players.values().stream()
                 .filter(player -> player.getSessionStatus() == PlayerSessionState.CONNECT)
                 .count();
-        eventPublisher.publishEvent(new PlayerConnectedEvent(
-                connectedPlayers, WebSocketRoutes.TOPIC_NUM_PLAYERS));
     }
 
     public void printAllPlayers() {
@@ -81,19 +106,24 @@ public class PlayerServiceImpl implements PlayerService {
         return players.values();
     }
 
+    public Collection<Player> getAllPlayersExcept(String sessionIdToExclude) {
+        return players.values().stream()
+                .filter(player -> !player.getSessionId().equals(sessionIdToExclude))
+                .toList();
+    }
+
     public boolean existsBySessionId(String sessionId) {
         return players.containsKey(sessionId);
     }
 
-    public void reconnectFromPreviousSession(String oldSessionId, String newSessionId, String newToken) {
-        Player player = players.remove(oldSessionId);
+    /* EVENTS */
 
-        if (player != null) {
-            // TODO: validate player not repeat
-            player.setSessionId(newSessionId);
-            player.setTokenId(newToken);
-            players.put(newSessionId, player);
-        }
-        // EVENT: publishPlayerConnected();
+    public void enqueuePlayersConnectedEvent(String sessionId) {
+        playersConnectedQueue.enqueue(new PlayersConnectedEvent(WebSocketRoutes.TOPIC_NUM_PLAYERS, sessionId));
     }
+
+    public void enqueuePlayersListEvent(String sessionId) {
+        playersListQueue.enqueue(new PlayersListEvent(WebSocketRoutes.QUEUE_LIST_PLAYERS, sessionId));
+    }
+
 }
