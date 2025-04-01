@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Player {
 
-    private final String sessionId;
+    private String sessionId;
 
     private String name;
 
@@ -19,12 +19,18 @@ public class Player {
 
     private PlayerSessionState sessionState;
 
+    private String tokenId;
+
     public PlayerSessionState getSessionStatus() {
         return sessionState;
     }
 
-    public boolean isActive() {
-        return sessionState == PlayerSessionState.ACTIVE;
+    public boolean isConnect() {
+        return sessionState == PlayerSessionState.CONNECT;
+    }
+
+    public boolean isDisconnect() {
+        return sessionState == PlayerSessionState.DISCONNECT;
     }
 
     public boolean isWaiting() {

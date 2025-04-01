@@ -42,6 +42,13 @@
                     <input type="text" id="endpointInput" value="ws://localhost.com/connect-game" />
 
                 </div>
+                <div class="input-container">
+                    <div class="label-row">
+                        <label for="tokenIdDisplay">Subscribe /user/queue/token-id</label>
+                        <button class="copy-button" onclick="copyToken()">📋 Copiar</button>
+                    </div>
+                    <textarea id="tokenIdDisplay" rows="4" readonly>--- no token id ---</textarea>
+                </div>               
                 <div class="buttons">
                     <button id="connectBtn">Connect</button>
                     <button id="disconnectBtn" disabled class="disabled">Disconnect</button>
@@ -60,14 +67,33 @@
         </div>
 
         <div class="card">
+            <div class="card-header" onclick="toggleCard('errors')">
+                <span>❌ ERRORS</span>
+                <button id="errorsToggle">+</button>
+            </div>
+            <div class="card-content" id="errorsBox">
+                <div class="input-container">
+                    <label for="topicInput">Subscribe</label>
+                    <input type="text" id="topicInput" value="/user/queue/errors" readonly />
+                </div>
+                <div class="input-container">
+                    <label for="topicInput">Error</label>
+                    <div id="errorsMessage">
+                        <div class="json-container">Waiting for error...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
             <div class="card-header" onclick="toggleCard('numPlayersBox')">
                 <span>👥 Nº CLIENTS</span>
                 <button id="numPlayersToggle">+</button>
             </div>
             <div class="card-content" id="numPlayersBox">
                 <div class="input-container">
-                    <label for="topicInput">Topic</label>
-                    <input type="text" id="topicInput" value="/app/num-players" readonly />
+                    <label for="topicInput">Subscribe</label>
+                    <input type="text" id="topicInput" value="/topic/num-players" readonly />
                 </div>
                 <div class="input-container">
                     <label for="topicInput">Message</label>
@@ -77,6 +103,26 @@
                 </div>
             </div>
         </div>
+
+        <div class="card">
+            <div class="card-header" onclick="toggleCard('clientsBox')">
+                <span>👤 CLIENTS</span>
+                <button id="clientsToggle">+</button>
+            </div>
+            <div class="card-content" id="clientsBox">
+                <div class="input-container">
+                    <label for="clientsTopicInput">Subscribe</label>
+                    <input type="text" id="clientsTopicInput" value="/topic/list-players" readonly />
+                </div>
+                <div class="input-container">
+                    <label for="clientsMessage">Message</label>
+                    <div id="clientsMessage">
+                        <div class="json-container">Waiting for data...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+            
     </div>
 
     <script src="script.js"></script>

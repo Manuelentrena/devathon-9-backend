@@ -126,3 +126,20 @@ body {
   color: #333;
   pointer-events: none;
 }
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.copy-button {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+textarea {
+  padding: 0.5rem;
+}
