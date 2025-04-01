@@ -19,6 +19,13 @@ document.getElementById("connectBtn").addEventListener("click", () => {
                 document.getElementById("numPlayersMessage").innerHTML = `<div class="json-container">${JSON.stringify(JSON.parse(message.body), null, 2)}</div>`;
             });
 
+            client.subscribe("/user/queue/list-players", (message) => {
+                const data = JSON.parse(message.body);
+                console.log({ data })
+                document.getElementById("clientsMessage").innerHTML =
+                    `<div class="json-container">${JSON.stringify(data, null, 2)}</div>`;
+            });
+
             client.subscribe("/user/queue/token-id", (message) => {
                 const { token_id } = JSON.parse(message.body);
                 savedToken = token_id;
@@ -28,11 +35,6 @@ document.getElementById("connectBtn").addEventListener("click", () => {
             client.subscribe("/user/queue/errors", (message) => {
                 console.log(JSON.parse(message.body))
                 document.getElementById("errorsMessage").innerHTML = `<div class="json-container">${JSON.stringify(JSON.parse(message.body), null, 2)}</div>`;
-            });
-
-            client.publish({
-                destination: "/app/num-players",
-                body: "{}"
             });
 
             client.publish({
@@ -49,8 +51,8 @@ document.getElementById("connectBtn").addEventListener("click", () => {
             updateButtonStyles(false);
             document.getElementById("frameBox").innerHTML = `<div class="json-container">Frame will appear here</div>`;
             document.getElementById("numPlayersMessage").innerHTML = `<div class="json-container">Waiting for data...</div>`;
+            document.getElementById("clientsMessage").innerHTML = `<div class="json-container">Waiting for data...</div>`;
             document.getElementById("errorsMessage").innerHTML = `<div class="json-container">Waiting for data...</div>`;
-            // 🔁 Reset session id
             document.getElementById("tokenIdDisplay").value = "--- no token id ---";
         },
         onStompError: (frame) => {
