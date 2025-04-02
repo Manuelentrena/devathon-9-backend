@@ -6,6 +6,8 @@ import java.util.Collection;
 
 public interface PlayerService {
 
+    /* SETTERS */
+
     void addPlayer(String sessionId, String name, String house, PlayerSessionState sessionState, String tokenId);
 
     void addToken(String sessionId, String tokenId);
@@ -15,6 +17,10 @@ public interface PlayerService {
     Player updatePlayerInfo(String sessionId, String name, String house);
 
     void updatePlayerSessionState(String sessionId, PlayerSessionState state);
+
+    /* GETTERS */
+
+    boolean hasPlayerInfo(String sessionId);
 
     int getAllPlayerCount();
 
@@ -29,6 +35,8 @@ public interface PlayerService {
     boolean existsBySessionId(String sessionId);
 
     void reconnectFromPreviousSession(String oldSessionId, String newSessionId, String newToken);
+
+    /* EVENTS */
 
     void enqueuePlayersConnectedEvent(String sessionId);
 

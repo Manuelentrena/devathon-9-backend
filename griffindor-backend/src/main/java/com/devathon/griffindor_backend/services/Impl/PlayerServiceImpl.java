@@ -84,6 +84,13 @@ public class PlayerServiceImpl implements PlayerService {
 
     /* GETTER */
 
+    public boolean hasPlayerInfo(String sessionId) {
+        Player player = players.get(sessionId);
+        if (player == null)
+            return false;
+        return player.getName() != null && player.getHouse() != null;
+    }
+
     public int getAllPlayerCount() {
         return players.size();
     }
