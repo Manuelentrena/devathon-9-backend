@@ -49,32 +49,37 @@ public class AssignRoomController {
             return;
         }
 
-        Room room = waitlist.pollAvailableRoom();
+        // 🔐 Synchronized block to avoid race conditions
+        synchronized (waitlist) {
 
-        if (room == null) {
-            room = roomService.createRoom(RoomVisibility.PUBLIC);
-            roomService.joinRoom(room.getRoomId(), sessionId);
-            playerService.updatePlayerSessionState(sessionId, PlayerSessionState.WAITING);
-            waitlist.addRoom(room);
-            return;
-        }
+            Room room = waitlist.pollAvailableRoom();
 
-        boolean joined = roomService.joinRoom(room.getRoomId(), sessionId);
+            if (room == null) {
+                room = roomService.createRoom(RoomVisibility.PUBLIC);
+                roomService.joinRoom(room.getRoomId(), sessionId);
+                playerService.updatePlayerSessionState(sessionId, PlayerSessionState.WAITING);
+                waitlist.addRoom(room);
+                return;
+            }
 
-        if (!joined) {
-            errorService.sendErrorToSession(sessionId, "ROOM_FULL", "La sala ya está llena");
-            return;
-        }
+            boolean joined = roomService.joinRoom(room.getRoomId(), sessionId);
 
-        waitlist.removeRoom(room);
+            if (!joined) {
+                errorService.sendErrorToSession(sessionId, "ROOM_FULL", "La sala ya está llena");
+                return;
+            }
 
-        for (String playerId : room.getPlayerIds()) {
-            playerService.updatePlayerSessionState(playerId, PlayerSessionState.FIGHTING);
-            messagingTemplate.convertAndSendToUser(
-                    playerId,
-                    WebSocketRoutes.QUEUE_DUEL,
-                    new RoomIdResponseDto(room.getRoomId()),
-                    buildHeaders(playerId));
+            waitlist.removeRoom(room);
+
+            for (String playerId : room.getPlayerIds()) {
+                playerService.updatePlayerSessionState(playerId, PlayerSessionState.FIGHTING);
+                messagingTemplate.convertAndSendToUser(
+                        playerId,
+                        WebSocketRoutes.QUEUE_DUEL,
+                        new RoomIdResponseDto(room.getRoomId()),
+                        buildHeaders(playerId));
+            }
+
         }
 
     }
