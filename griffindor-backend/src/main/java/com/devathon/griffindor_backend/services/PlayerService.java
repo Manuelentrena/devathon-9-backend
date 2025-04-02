@@ -12,7 +12,7 @@ public interface PlayerService {
 
     void removePlayer(String sessionId);
 
-    void updatePlayerInfo(String sessionId, String name, String house);
+    Player updatePlayerInfo(String sessionId, String name, String house);
 
     void updatePlayerSessionState(String sessionId, PlayerSessionState state);
 
