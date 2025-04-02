@@ -6,6 +6,9 @@ import com.devathon.griffindor_backend.enums.PlayerSessionState;
 import com.devathon.griffindor_backend.services.ErrorService;
 import com.devathon.griffindor_backend.services.PlayerService;
 import com.devathon.griffindor_backend.utils.Jwt;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -17,12 +20,14 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
 @Controller
+@Slf4j
 public class GameSessionController {
 
     private final PlayerService playerService;
     private final Jwt jwt;
     private final ErrorService errorService;
 
+   
     public GameSessionController(PlayerService playerService, Jwt jwt, ErrorService errorService) {
         this.playerService = playerService;
         this.jwt = jwt;
