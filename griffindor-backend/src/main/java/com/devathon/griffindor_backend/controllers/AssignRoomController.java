@@ -1,21 +1,18 @@
 package com.devathon.griffindor_backend.controllers;
 
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
+import com.devathon.griffindor_backend.Queues.RoomReadyQueue;
 import com.devathon.griffindor_backend.Queues.WaitlistQueue;
 import com.devathon.griffindor_backend.config.WebSocketRoutes;
-import com.devathon.griffindor_backend.dtos.RoomIdResponseDto;
 import com.devathon.griffindor_backend.enums.PlayerSessionState;
 import com.devathon.griffindor_backend.enums.RoomVisibility;
+import com.devathon.griffindor_backend.events.RoomReadyEvent;
 import com.devathon.griffindor_backend.models.Room;
 import com.devathon.griffindor_backend.services.ErrorService;
 import com.devathon.griffindor_backend.services.PlayerService;
 import com.devathon.griffindor_backend.services.RoomService;
-
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -25,11 +22,10 @@ public class AssignRoomController {
     private final PlayerService playerService;
     private final ErrorService errorService;
     private final RoomService roomService;
-    private final WaitlistQueue waitlist;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final WaitlistQueue waitlistQueue;
+    private final RoomReadyQueue roomReadyQueue;
 
     @MessageMapping(WebSocketRoutes.DUEL)
-    @SendToUser(WebSocketRoutes.QUEUE_DUEL)
     public void assignRoom(SimpMessageHeaderAccessor headerAccessor) {
 
         String sessionId = headerAccessor.getSessionId();
@@ -50,15 +46,15 @@ public class AssignRoomController {
         }
 
         // 🔐 Synchronized block to avoid race conditions
-        synchronized (waitlist) {
+        synchronized (waitlistQueue) {
 
-            Room room = waitlist.pollAvailableRoom();
+            Room room = waitlistQueue.pollAvailableRoom();
 
             if (room == null) {
                 room = roomService.createRoom(RoomVisibility.PUBLIC);
                 roomService.joinRoom(room.getRoomId(), sessionId);
                 playerService.updatePlayerSessionState(sessionId, PlayerSessionState.WAITING);
-                waitlist.addRoom(room);
+                waitlistQueue.addRoom(room);
                 return;
             }
 
@@ -69,26 +65,18 @@ public class AssignRoomController {
                 return;
             }
 
-            waitlist.removeRoom(room);
+            if (room.isFull()) {
+                waitlistQueue.removeRoom(room);
 
-            for (String playerId : room.getPlayerIds()) {
-                playerService.updatePlayerSessionState(playerId, PlayerSessionState.FIGHTING);
-                messagingTemplate.convertAndSendToUser(
-                        playerId,
-                        WebSocketRoutes.QUEUE_DUEL,
-                        new RoomIdResponseDto(room.getRoomId()),
-                        buildHeaders(playerId));
+                for (String playerId : room.getPlayerIds()) {
+                    playerService.updatePlayerSessionState(playerId, PlayerSessionState.FIGHTING);
+                }
+
+                roomReadyQueue.enqueue(new RoomReadyEvent(room, WebSocketRoutes.QUEUE_DUEL));
             }
 
         }
 
-    }
-
-    private MessageHeaders buildHeaders(String sessionId) {
-        SimpMessageHeaderAccessor accessor = SimpMessageHeaderAccessor.create();
-        accessor.setSessionId(sessionId);
-        accessor.setLeaveMutable(true);
-        return accessor.getMessageHeaders();
     }
 
 }
