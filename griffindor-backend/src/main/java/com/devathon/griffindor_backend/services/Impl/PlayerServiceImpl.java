@@ -97,7 +97,7 @@ public class PlayerServiceImpl implements PlayerService {
 
     public int getNumPlayerConnected() {
         return (int) players.values().stream()
-                .filter(player -> player.getSessionStatus() == PlayerSessionState.CONNECT)
+                .filter(player -> player.getSessionStatus() != PlayerSessionState.DISCONNECT)
                 .count();
     }
 
