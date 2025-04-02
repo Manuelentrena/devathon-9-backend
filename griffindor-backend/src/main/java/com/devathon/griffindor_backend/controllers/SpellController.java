@@ -5,6 +5,7 @@ import com.devathon.griffindor_backend.models.Spell;
 import com.devathon.griffindor_backend.services.SpellService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("spells")
+@CrossOrigin("*") // TODO: Verify CORS configuration
 public class SpellController {
 
     private final SpellService spellService;
