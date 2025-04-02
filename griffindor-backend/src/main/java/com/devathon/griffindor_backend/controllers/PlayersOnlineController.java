@@ -1,26 +1,23 @@
 package com.devathon.griffindor_backend.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
-
 import com.devathon.griffindor_backend.config.WebSocketRoutes;
 import com.devathon.griffindor_backend.dtos.PlayerDto;
 import com.devathon.griffindor_backend.dtos.PlayerRegisterDto;
 import com.devathon.griffindor_backend.models.Player;
 import com.devathon.griffindor_backend.services.ErrorService;
 import com.devathon.griffindor_backend.services.PlayerService;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Controller
 public class PlayersOnlineController {
 
-    @Autowired
-    private PlayerService playerService;
-
-    @Autowired
-    private ErrorService errorService;
+    private final PlayerService playerService;
+    private final ErrorService errorService;
 
     @MessageMapping(WebSocketRoutes.REGISTER_USER)
     @SendToUser(WebSocketRoutes.QUEUE_REGISTER_USER)
