@@ -23,7 +23,7 @@ public class SpellController {
 
     @GetMapping("")
     public ResponseEntity<List<SpellResponseDto>> getAllSpell(){
-        // Mappear cada item de la lista a dto
+        // Entities to dtos
         List<SpellResponseDto> spells = spellService.getAll().stream()
                 .map(SpellResponseDto::new)
                 .collect(Collectors.toList());
