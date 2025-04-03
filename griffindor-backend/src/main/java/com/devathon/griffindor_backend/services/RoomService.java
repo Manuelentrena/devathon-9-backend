@@ -7,43 +7,55 @@ import java.util.UUID;
 
 public interface RoomService {
 
+    /*
+     * ============================
+     * SETTERS
+     * ============================
+     */
+
     /**
-     * Crea una nueva sala y la devuelve.
+     * Creates a new room with the given visibility and returns it.
      */
     Room createRoom(RoomVisibility visibility);
 
     /**
-     * Añade un jugador a la sala.
+     * Adds a player to the specified room.
      *
-     * @param roomId   UUID de la sala
-     * @param playerId ID del jugador
-     * @return true si el jugador se añadió con éxito
+     * @param roomId   UUID of the room
+     * @param playerId ID of the player
+     * @return true if the player was successfully added
      */
     boolean joinRoom(UUID roomId, String playerId);
 
     /**
-     * Elimina un jugador de la sala.
+     * Removes a player from the specified room.
      *
-     * @param roomId   UUID de la sala
-     * @param playerId ID del jugador
-     * @return true si el jugador se eliminó con éxito
+     * @param roomId   UUID of the room
+     * @param playerId ID of the player
+     * @return true if the player was successfully removed
      */
     boolean takeOutRoom(UUID roomId, String playerId);
 
+    /*
+     * ============================
+     * GETTERS
+     * ============================
+     */
+
     /**
-     * Indica si una sala está llena.
+     * Checks whether the specified room is full.
      *
-     * @param roomId UUID de la sala
-     * @return true si está llena
+     * @param roomId UUID of the room
+     * @return true if the room is full
      */
     boolean isFull(UUID roomId);
 
     /**
-     * Verifica si un jugador pertenece a una sala.
+     * Checks whether a player belongs to the specified room.
      *
-     * @param roomId   UUID de la sala
-     * @param playerId ID del jugador
-     * @return true si el jugador pertenece a la sala
+     * @param roomId   UUID of the room
+     * @param playerId playerId ID of the player
+     * @return true if the player is part of the room
      */
     boolean belongsRoom(UUID roomId, String playerId);
 }
