@@ -61,7 +61,7 @@ public class AssignRoomController {
             boolean joined = roomService.joinRoom(room.getRoomId(), sessionId);
 
             if (!joined) {
-                errorService.sendErrorToSession(sessionId, "ROOM_FULL", "La sala ya está llena");
+                errorService.sendErrorToSession(sessionId, "ROOM_FULL", "The room is already full");
                 return;
             }
 
