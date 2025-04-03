@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
@@ -57,7 +58,7 @@ public class GameSessionController {
 
     @MessageMapping(WebSocketRoutes.TOKEN_ID)
     @SendToUser(WebSocketRoutes.QUEUE_TOKEN_ID)
-    public TokenIdResponseDto sendToken(String message, SimpMessageHeaderAccessor headerAccessor) {
+    public TokenIdResponseDto sendToken(@Payload String message, @Payload SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
         String token = headerAccessor.getFirstNativeHeader("token_id");
 
