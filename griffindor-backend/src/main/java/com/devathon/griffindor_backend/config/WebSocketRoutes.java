@@ -14,6 +14,7 @@ public class WebSocketRoutes {
     public static final String NUM_PLAYERS = "/num-players";
     public static final String LIST_PLAYERS = "/list-players";
     public static final String REGISTER_USER = "/register-user";
+    public static final String DUEL = "/duel";
 
     // Error Path
     public static final String ERRORS = "/errors";
@@ -32,6 +33,7 @@ public class WebSocketRoutes {
     public static final String QUEUE_REGISTER_USER = QUEUE_PREFIX + REGISTER_USER;
     public static final String QUEUE_ERRORS = QUEUE_PREFIX + ERRORS;
     public static final String QUEUE_LIST_PLAYERS = QUEUE_PREFIX + LIST_PLAYERS;
+    public static final String QUEUE_DUEL = QUEUE_PREFIX + DUEL;
 
     // Queue Paths Subscriber
     public static final String USER_QUEUE_LIST_PLAYERS = USER_PREFIX + QUEUE_PREFIX + LIST_PLAYERS;

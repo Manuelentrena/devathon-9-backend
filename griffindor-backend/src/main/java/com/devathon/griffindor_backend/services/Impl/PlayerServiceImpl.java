@@ -47,7 +47,7 @@ public class PlayerServiceImpl implements PlayerService {
         enqueuePlayersListEvent(sessionId);
     }
 
-    public void updatePlayerInfo(String sessionId, String name, String house) {
+    public Player updatePlayerInfo(String sessionId, String name, String house) {
         Player player = players.get(sessionId);
         if (player != null) {
             player.setName(name);
@@ -55,6 +55,8 @@ public class PlayerServiceImpl implements PlayerService {
         }
         enqueuePlayersConnectedEvent(sessionId);
         enqueuePlayersListEvent(sessionId);
+
+        return player;
     }
 
     public void updatePlayerSessionState(String sessionId, PlayerSessionState state) {
@@ -82,13 +84,20 @@ public class PlayerServiceImpl implements PlayerService {
 
     /* GETTER */
 
+    public boolean hasPlayerInfo(String sessionId) {
+        Player player = players.get(sessionId);
+        if (player == null)
+            return false;
+        return player.getName() != null && player.getHouse() != null;
+    }
+
     public int getAllPlayerCount() {
         return players.size();
     }
 
     public int getNumPlayerConnected() {
         return (int) players.values().stream()
-                .filter(player -> player.getSessionStatus() == PlayerSessionState.CONNECT)
+                .filter(player -> player.getSessionStatus() != PlayerSessionState.DISCONNECT)
                 .count();
     }
 
