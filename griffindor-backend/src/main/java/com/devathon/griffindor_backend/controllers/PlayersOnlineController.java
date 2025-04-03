@@ -1,6 +1,7 @@
 package com.devathon.griffindor_backend.controllers;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
@@ -10,7 +11,10 @@ import com.devathon.griffindor_backend.dtos.PlayerRegisterDto;
 import com.devathon.griffindor_backend.dtos.SucessResponseDto;
 import com.devathon.griffindor_backend.services.PlayerService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Controller
+@Slf4j
 public class PlayersOnlineController {
 
     private final PlayerService playerService;
@@ -21,8 +25,8 @@ public class PlayersOnlineController {
 
     @MessageMapping(WebSocketRoutes.REGISTER_USER)
     @SendToUser(WebSocketRoutes.QUEUE_REGISTER_USER)
-    public SucessResponseDto registerPlayer(PlayerRegisterDto playerRegisterDto,
-            SimpMessageHeaderAccessor headerAccessor) {
+    public SucessResponseDto registerPlayer(@Payload PlayerRegisterDto playerRegisterDto,
+           @Payload SimpMessageHeaderAccessor headerAccessor) {
 
         if (!playerService.existsBySessionId(playerRegisterDto.session_id())) {
             throw new IllegalArgumentException("Session ID not registered");
