@@ -1,6 +1,5 @@
 package com.devathon.griffindor_backend;
 
-
 import com.devathon.griffindor_backend.dtos.DuelResultDto;
 import com.devathon.griffindor_backend.models.Spell;
 import com.devathon.griffindor_backend.repositories.SpellRepository;
@@ -14,7 +13,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 public class SpellServiceTests {
@@ -63,6 +62,19 @@ public class SpellServiceTests {
     @Test
     void testDuel_isTie() {
         DuelResultDto result = spellService.resolveDuel(expelliarmus.getId(), expelliarmus.getId());
-        assertEquals(new DuelResultDto(null, null, true).toString(), result.toString());
+        assertEquals(new DuelResultDto((Spell) null, null, true).toString(), result.toString());
     }
+
+    @Test
+    void testDuel_spellNotFound_shouldThrowException() {
+        UUID fakeId = UUID.randomUUID();
+        when(spellRepository.findById(fakeId)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            spellService.resolveDuel(fakeId, expelliarmus.getId());
+        });
+
+        assertTrue(exception.getMessage().contains("Spell not found"));
+    }
+
 }
