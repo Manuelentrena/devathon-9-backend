@@ -10,4 +10,6 @@ public interface SpellService {
     List<Spell> getAll();
 
     DuelResultDto resolveDuel(UUID spellId1, UUID spellId2);
+
+    boolean spellExist(UUID spellId);
 }
