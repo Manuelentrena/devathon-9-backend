@@ -4,11 +4,16 @@ import com.devathon.griffindor_backend.models.Spell;
 import lombok.AllArgsConstructor;
 import lombok.ToString;
 
-@AllArgsConstructor
 @ToString
 public class DuelResultDto {
-    private final Spell winner;
-    private final Spell loser;
+
+    private final SpellShortDto winner;
+    private final SpellShortDto loser;
     private final boolean isTie;
 
+    public DuelResultDto(Spell winner, Spell loser, boolean isTie) {
+        this.winner = winner != null ? new SpellShortDto(winner) : null;
+        this.loser = loser != null ? new SpellShortDto(loser) : null;
+        this.isTie = isTie;
+    }
 }
