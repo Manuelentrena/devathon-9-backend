@@ -54,6 +54,7 @@ public class GameSessionController {
         if (WebSocketRoutes.USER_QUEUE_LIST_PLAYERS.equals(destination)) {
             playerService.enqueuePlayersListEvent(sessionId);
         }
+        
     }
 
     @MessageMapping(WebSocketRoutes.TOKEN_ID)

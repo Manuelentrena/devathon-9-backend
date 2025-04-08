@@ -5,7 +5,10 @@ import com.devathon.griffindor_backend.models.Room;
 import com.devathon.griffindor_backend.services.RoomService;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,10 +16,26 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RoomServiceImpl implements RoomService {
 
     private final Map<UUID, Room> rooms = new ConcurrentHashMap<>();
+    private static final List<String> ROOM_NAMES = Arrays.asList(
+        "Cámara de los Secretos",
+        "Sala Común de Gryffindor",
+        "Bosque Prohibido",
+        "El Callejón Diagon",
+        "Sala de los Menesteres",
+        "Hogwarts Express",
+        "El Nobby",
+        "La sala de restricción",
+        "Agujeros de los gnomos",
+        "Hogsmeade"
+    );
+
+    private final Random random = new Random();
+     
 
     @Override
     public Room createRoom(RoomVisibility visibility) {
-        Room room = new Room(visibility);
+        String roomName = ROOM_NAMES.get(random.nextInt(ROOM_NAMES.size()));
+        Room room = new Room(visibility, roomName);
         rooms.put(room.getRoomId(), room);
         return room;
     }
@@ -52,4 +71,6 @@ public class RoomServiceImpl implements RoomService {
         Room room = rooms.get(roomId);
         return room != null && room.containsPlayer(playerId);
     }
+
+    
 }

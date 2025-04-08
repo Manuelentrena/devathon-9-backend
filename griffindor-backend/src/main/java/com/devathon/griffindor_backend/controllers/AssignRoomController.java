@@ -1,11 +1,14 @@
 package com.devathon.griffindor_backend.controllers;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 import com.devathon.griffindor_backend.Queues.RoomReadyQueue;
 import com.devathon.griffindor_backend.Queues.WaitlistQueue;
 import com.devathon.griffindor_backend.config.WebSocketRoutes;
+import com.devathon.griffindor_backend.dtos.RoomResponseDto;
 import com.devathon.griffindor_backend.enums.PlayerSessionState;
 import com.devathon.griffindor_backend.enums.RoomVisibility;
 import com.devathon.griffindor_backend.events.RoomReadyEvent;
@@ -73,10 +76,42 @@ public class AssignRoomController {
                 }
 
                 roomReadyQueue.enqueue(new RoomReadyEvent(room, WebSocketRoutes.QUEUE_DUEL));
+                
             }
 
         }
 
     }
+
+    @MessageMapping(WebSocketRoutes.CREATE_ROOM) // app/create-room
+    @SendToUser(WebSocketRoutes.REPLIES)
+    public RoomResponseDto createRoom(@Payload SimpMessageHeaderAccessor headerAccessor) {
+        String sessionId = headerAccessor.getSessionId();
+
+        if (sessionId == null) {
+           
+            errorService.sendErrorToSession("unknown", "SESSION_ERROR", "Session ID is null");
+            return null;
+        }
+
+        if (!playerService.existsBySessionId(sessionId)) {
+
+            errorService.sendErrorToSession(sessionId, "PLAYER_NOT_FOUND", "Session ID not registered");
+            return null;
+        }
+
+        
+        Room newRoom = roomService.createRoom(RoomVisibility.PUBLIC); 
+        roomService.joinRoom(newRoom.getRoomId(), sessionId); 
+        
+        RoomResponseDto response = new RoomResponseDto();
+        response.setRoomId(newRoom.getRoomId());
+        response.setName(newRoom.getName()); 
+        System.out.println("Created room: " + response.getRoomId());
+        System.out.println("Created room name: " + response.getName());
+        return response;
+    }
+
+    
 
 }
