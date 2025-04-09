@@ -13,12 +13,11 @@ public class Room {
     private final UUID roomId;
     private final Set<String> playerIds = new HashSet<>();
     private final RoomVisibility visibility;
-    private final String name;
+    private String name;
 
-    public Room(RoomVisibility visibility, String name) {
+    public Room(RoomVisibility visibility) {
         this.roomId = UUID.randomUUID();
         this.visibility = visibility;
-        this.name = name;
     }
 
     public UUID getRoomId() {
@@ -53,6 +52,10 @@ public class Room {
 
     public boolean isEmpty() {
         return playerIds.isEmpty();
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getName() {

@@ -34,8 +34,15 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public Room createRoom(RoomVisibility visibility) {
-        String roomName = ROOM_NAMES.get(random.nextInt(ROOM_NAMES.size()));
-        Room room = new Room(visibility, roomName);
+        Room room = new Room(visibility);
+        rooms.put(room.getRoomId(), room);
+        return room;
+    }
+
+    @Override
+    public Room createRoomWithName(RoomVisibility visibility) {
+        Room room = new Room(visibility);
+        room.setName(ROOM_NAMES.get(random.nextInt(ROOM_NAMES.size())));
         rooms.put(room.getRoomId(), room);
         return room;
     }

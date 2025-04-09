@@ -8,7 +8,7 @@ public class WebSocketRoutes {
     public static final String TOPIC_PREFIX = "/topic";
     public static final String QUEUE_PREFIX = "/queue";
     public static final String USER_PREFIX = "/user";
-    public static final String ROOM_PREFIX = "/room";
+    
 
     // Actions
     public static final String TOKEN_ID = "/token-id";
@@ -18,6 +18,7 @@ public class WebSocketRoutes {
     public static final String DUEL = "/duel";
     public static final String CREATE_ROOM = "/create-room";
     public static final String REPLIES = "/replies";
+    public static final String ROOM = "/room";
 
     // Error Path
     public static final String ERRORS = "/errors";
@@ -30,7 +31,7 @@ public class WebSocketRoutes {
     // Topic Paths
     public static final String TOPIC_NUM_PLAYERS = TOPIC_PREFIX + NUM_PLAYERS;
     public static final String TOPIC_LIST_PLAYERS = TOPIC_PREFIX + LIST_PLAYERS;
-    public static final String ROOM_TOPIC_PREFIX = TOPIC_PREFIX + ROOM_PREFIX;
+    public static final String TOPIC_ROOM = TOPIC_PREFIX + ROOM;
 
     // Queue Paths
     public static final String QUEUE_TOKEN_ID = QUEUE_PREFIX + TOKEN_ID;
