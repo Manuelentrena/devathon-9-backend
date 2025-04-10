@@ -1,8 +1,6 @@
 package com.devathon.griffindor_backend.models;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import com.devathon.griffindor_backend.enums.RoomVisibility;
 
@@ -13,6 +11,8 @@ public class Room {
     private final UUID roomId;
     private final Set<String> playerIds = new HashSet<>();
     private final RoomVisibility visibility;
+
+    private final List<String> roundWinHistory = new ArrayList<>();
 
     public Room(RoomVisibility visibility) {
         this.roomId = UUID.randomUUID();
@@ -29,6 +29,10 @@ public class Room {
 
     public RoomVisibility getVisibility() {
         return visibility;
+    }
+
+    public List<String> getRoundWinHistory () {
+        return roundWinHistory;
     }
 
     public boolean addPlayer(String playerId) {
@@ -51,5 +55,9 @@ public class Room {
 
     public boolean isEmpty() {
         return playerIds.isEmpty();
+    }
+
+    public void addRoundWinner(String playerId) {
+        roundWinHistory.add(playerId);
     }
 }

@@ -47,12 +47,19 @@ public class SpellServiceImpl implements SpellService {
         RoundParticipantResultDto p1 = new RoundParticipantResultDto(roundRequest.player1().sessionId(), player1Name, new SpellShortDto(spell1));
         RoundParticipantResultDto p2 = new RoundParticipantResultDto(roundRequest.player2().sessionId(), player2Name, new SpellShortDto(spell2));
 
+        RoundResponseDto result;
 
         if (spell1.getCounterSpell() != null && spell1.getCounterSpell().equals(spell2)) {
+            addWinnerToTheHistory(room, p2.sessionId());
             return new RoundResponseDto(false, p2, p1);
         }
 
+        addWinnerToTheHistory(room, p1.sessionId());
         return new RoundResponseDto(false, p1, p2);
+    }
+
+    private void addWinnerToTheHistory(Room room, String playerId) {
+        room.addRoundWinner(playerId);
     }
 
     @Override
