@@ -135,4 +135,12 @@ public class PlayerServiceImpl implements PlayerService {
         playersListQueue.enqueue(new PlayersListEvent(WebSocketRoutes.QUEUE_LIST_PLAYERS, sessionId));
     }
 
+    public String getPlayerName(String sessionId) {
+        Player player = players.get(sessionId);
+        if (player == null) {
+            throw new RuntimeException("Player not found");
+        }
+        return player.getName();
+    }
+
 }

@@ -141,4 +141,6 @@ public interface PlayerService {
      */
     void enqueuePlayersListEvent(String sessionId);
 
+    public String getPlayerName(String sessionId);
+
 }

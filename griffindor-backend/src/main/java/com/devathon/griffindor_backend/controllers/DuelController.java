@@ -2,13 +2,15 @@ package com.devathon.griffindor_backend.controllers;
 
 import com.devathon.griffindor_backend.Queues.DuelResultQueue;
 import com.devathon.griffindor_backend.config.WebSocketRoutes;
-import com.devathon.griffindor_backend.dtos.CastSpellsDto;
-import com.devathon.griffindor_backend.dtos.DuelResultDto;
+import com.devathon.griffindor_backend.dtos.RoundRequestDto;
+import com.devathon.griffindor_backend.dtos.RoundResponseDto;
 import com.devathon.griffindor_backend.events.DuelResultEvent;
+import com.devathon.griffindor_backend.models.Room;
 import com.devathon.griffindor_backend.services.ErrorService;
 import com.devathon.griffindor_backend.services.RoomService;
 import com.devathon.griffindor_backend.services.SpellService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -25,40 +27,36 @@ public class DuelController {
     private final RoomService roomService;
     private final DuelResultQueue duelResultQueue;
 
-    @MessageMapping(WebSocketRoutes.CAST_SPELL)
-    public void duelResult(@Payload CastSpellsDto castSpells, SimpMessageHeaderAccessor headerAccessor) {
+    @MessageMapping(WebSocketRoutes.SUBMIT_ROUND)
+    public void round(@DestinationVariable UUID roomId, @Payload RoundRequestDto roundRequest, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
-
-        final int MAX_SPELLS = 2;
 
         if (sessionId == null) {
             errorService.sendErrorToSession("unknown", "SESSION_ERROR", "Session ID is null");
             return;
         }
 
-        if (!roomService.roomExist(castSpells.roomId())) {
+        if (!roomService.roomExist(roomId)) {
             errorService.sendErrorToSession(sessionId, "ROOM_ERROR", "Room not found");
             return;
         }
 
-        if (castSpells.spells() == null || castSpells.spells().size() != MAX_SPELLS) {
-            errorService.sendErrorToSession(sessionId, "SPELL_ERROR", "You must cast exactly " + MAX_SPELLS + " spells");
+        if (!spellService.spellExist(roundRequest.player1().spellId()) ||
+                !spellService.spellExist(roundRequest.player2().spellId())) {
+            errorService.sendErrorToSession(sessionId, "SPELL_ERROR", "One or both spells are invalid");
             return;
         }
 
-        for (UUID spell : castSpells.spells()) {
-            if (!spellService.spellExist(spell)) {
-                errorService.sendErrorToSession(sessionId, "SPELL_ERROR", "Spell not found");
-                return;
-            }
+        if (!roomService.belongsRoom(roomId, roundRequest.player1().sessionId()) ||
+                !roomService.belongsRoom(roomId, roundRequest.player2().sessionId())) {
+            errorService.sendErrorToSession(sessionId, "PLAYER_ERROR", "One or both players not in this room");
+            return;
         }
 
-        // TODO: implement logic to resolve a dynamic duel based on the list of spells
-        UUID spellId1 = castSpells.spells().get(0);
-        UUID spellId2 = castSpells.spells().get(1);
+        Room room = roomService.getOneRoom(roomId);
 
-        DuelResultDto duelResult = spellService.resolveDuel(spellId1, spellId2);
-        duelResultQueue.enqueue(new DuelResultEvent(castSpells.roomId(), duelResult, WebSocketRoutes.QUEUE_DUEL_RESULT));
+        RoundResponseDto duelResult = spellService.resolveRound(room, roundRequest);
+        duelResultQueue.enqueue(new DuelResultEvent(roomId, duelResult, WebSocketRoutes.QUEUE_ROUND_RESULT));
     }
 
 }

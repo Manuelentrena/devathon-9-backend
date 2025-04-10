@@ -1,8 +1,13 @@
 package com.devathon.griffindor_backend.services.Impl;
 
-import com.devathon.griffindor_backend.dtos.DuelResultDto;
+import com.devathon.griffindor_backend.dtos.RoundParticipantResultDto;
+import com.devathon.griffindor_backend.dtos.RoundResponseDto;
+import com.devathon.griffindor_backend.dtos.RoundRequestDto;
+import com.devathon.griffindor_backend.dtos.SpellShortDto;
+import com.devathon.griffindor_backend.models.Room;
 import com.devathon.griffindor_backend.models.Spell;
 import com.devathon.griffindor_backend.repositories.SpellRepository;
+import com.devathon.griffindor_backend.services.PlayerService;
 import com.devathon.griffindor_backend.services.SpellService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +22,9 @@ public class SpellServiceImpl implements SpellService {
     @Autowired
     SpellRepository spellRepository;
 
+    @Autowired
+    PlayerService playerService;
+
     // Get all spells
     @Override
     public List<Spell> getAll() {
@@ -24,21 +32,27 @@ public class SpellServiceImpl implements SpellService {
     }
 
     @Override
-    public DuelResultDto resolveDuel(UUID spellUser1, UUID spellUser2) {
+    public RoundResponseDto resolveRound(Room room, RoundRequestDto roundRequest) {
 
-        Spell spell1 = spellRepository.findById(spellUser1).orElseThrow(() -> new EntityNotFoundException("Spell not found: " + spellUser1));
-        Spell spell2 = spellRepository.findById(spellUser2).orElseThrow(() -> new EntityNotFoundException("Spell not found: " + spellUser2));
-
+        Spell spell1 = spellRepository.findById(roundRequest.player1().spellId()).orElseThrow(() -> new EntityNotFoundException("Spell not found"));
+        Spell spell2 = spellRepository.findById(roundRequest.player2().spellId()).orElseThrow(() -> new EntityNotFoundException("Spell not found"));
 
         if (spell1.equals(spell2)) {
-            return new DuelResultDto((Spell) null, null, true);
+            return new RoundResponseDto(true, null, null);
         }
+
+        String player1Name = playerService.getPlayerName(roundRequest.player1().sessionId());
+        String player2Name = playerService.getPlayerName(roundRequest.player2().sessionId());
+
+        RoundParticipantResultDto p1 = new RoundParticipantResultDto(roundRequest.player1().sessionId(), player1Name, new SpellShortDto(spell1));
+        RoundParticipantResultDto p2 = new RoundParticipantResultDto(roundRequest.player2().sessionId(), player2Name, new SpellShortDto(spell2));
+
 
         if (spell1.getCounterSpell() != null && spell1.getCounterSpell().equals(spell2)) {
-            return new DuelResultDto(spell2, spell1, false);
+            return new RoundResponseDto(false, p2, p1);
         }
 
-        return new DuelResultDto(spell1, spell2, false);
+        return new RoundResponseDto(false, p1, p2);
     }
 
     @Override
