@@ -15,7 +15,6 @@ public class WebSocketRoutes {
     public static final String LIST_PLAYERS = "/list-players";
     public static final String REGISTER_USER = "/register-user";
     public static final String DUEL = "/duel";
-    public static final String CAST_SPELL = DUEL + "/cast-spells";
     public static final String ROUND = "/round";
     public static final String SUBMIT_ROUND = ROUND + "/{roomId}";
 
