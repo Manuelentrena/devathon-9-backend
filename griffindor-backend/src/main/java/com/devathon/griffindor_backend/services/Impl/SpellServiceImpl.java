@@ -40,7 +40,6 @@ public class SpellServiceImpl implements SpellService {
         UUID spell1Id = player1Round.getSpellForRound(round);
         UUID spell2Id = player2Round.getSpellForRound(round);
 
-        RoundResult result;
         if (spell1Id.equals(spell2Id)) {
             return new RoundResult(null, RoundStatus.DRAW);
         }
@@ -48,12 +47,12 @@ public class SpellServiceImpl implements SpellService {
         Optional<Spell> spell1 = spellRepository.findById(spell1Id);
         Optional<Spell> spell2 = spellRepository.findById(spell2Id);
 
-        if (spell1.get().getCounterSpell() != null && spell1.get().getCounterSpell().equals(spell2)) {
-            player1Round.incrementRoundsWon();
-            return new RoundResult(player1Id, RoundStatus.WINNER);
-        } else {
+        if (spell1.get().getCounterSpell() != null && spell1.get().getCounterSpell().equals(spell2.get())) {
             player2Round.incrementRoundsWon();
             return new RoundResult(player2Id, RoundStatus.WINNER);
+        } else {
+            player1Round.incrementRoundsWon();
+            return new RoundResult(player1Id, RoundStatus.WINNER);
         }
     }
 
