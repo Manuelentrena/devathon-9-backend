@@ -1,22 +1,30 @@
 package com.devathon.griffindor_backend.controllers;
 
-import com.devathon.griffindor_backend.Queues.DuelResultQueue;
 import com.devathon.griffindor_backend.config.WebSocketRoutes;
+import com.devathon.griffindor_backend.dtos.PlayerSpellDto;
 import com.devathon.griffindor_backend.dtos.RoundRequestDto;
 import com.devathon.griffindor_backend.dtos.RoundResponseDto;
-import com.devathon.griffindor_backend.events.DuelResultEvent;
+import com.devathon.griffindor_backend.dtos.RoundResult;
+import com.devathon.griffindor_backend.models.PlayerRound;
 import com.devathon.griffindor_backend.models.Room;
 import com.devathon.griffindor_backend.services.ErrorService;
 import com.devathon.griffindor_backend.services.RoomService;
 import com.devathon.griffindor_backend.services.SpellService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -25,10 +33,10 @@ public class DuelController {
     private final SpellService spellService;
     private final ErrorService errorService;
     private final RoomService roomService;
-    private final DuelResultQueue duelResultQueue;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping(WebSocketRoutes.SUBMIT_ROUND)
-    public void round(@DestinationVariable UUID roomId, @Payload RoundRequestDto roundRequest, SimpMessageHeaderAccessor headerAccessor) {
+    public void handleRound(@DestinationVariable UUID roomId, @Valid @Payload RoundRequestDto roundRequest, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
 
         if (sessionId == null) {
@@ -37,26 +45,75 @@ public class DuelController {
         }
 
         if (!roomService.roomExist(roomId)) {
-            errorService.sendErrorToSession(sessionId, "ROOM_ERROR", "Room not found");
+            errorService.sendErrorToSession(sessionId, "ROOM_NOT_FOUND", "Room not found");
             return;
         }
 
-        if (!spellService.spellExist(roundRequest.player1().spellId()) ||
-                !spellService.spellExist(roundRequest.player2().spellId())) {
-            errorService.sendErrorToSession(sessionId, "SPELL_ERROR", "One or both spells are invalid");
+        if (!roomService.belongsRoom(roomId, sessionId)) {
+            errorService.sendErrorToSession(sessionId, "PLAYER_NOT_FOUND", "Player not found in this room");
             return;
         }
 
-        if (!roomService.belongsRoom(roomId, roundRequest.player1().sessionId()) ||
-                !roomService.belongsRoom(roomId, roundRequest.player2().sessionId())) {
-            errorService.sendErrorToSession(sessionId, "PLAYER_ERROR", "One or both players not in this room");
+        if (!spellService.spellExist(roundRequest.spellId())) {
+            errorService.sendErrorToSession(sessionId, "SPELL_NOT_FOUND", "Spell not found");
             return;
         }
 
         Room room = roomService.getOneRoom(roomId);
 
-        RoundResponseDto duelResult = spellService.resolveRound(room, roundRequest);
-        duelResultQueue.enqueue(new DuelResultEvent(roomId, duelResult, WebSocketRoutes.QUEUE_ROUND_RESULT));
+        PlayerRound playerRound = room.getPlayers().get(sessionId);
+
+        playerRound.addSpell(roundRequest.spellId());
+
+        long playersReady = room.getPlayers().values().stream()
+                .filter(p -> p.getSpells().size() == room.getCurrentRound())
+                .count();
+
+        if (playersReady == Room.MAX_PLAYERS) {
+            RoundResult roundResult = spellService.resolveRound(room);
+
+            String playerWinnerDuel = room.getPlayers().entrySet().stream()
+                    .filter(entry -> entry.getValue().getRoundsWon() >= 3)
+                    .map(Map.Entry::getKey)
+                    .findFirst()
+                    .orElse(null);
+
+            boolean gameOver = playerWinnerDuel != null;
+
+            Set<PlayerSpellDto> playerDtos = room.getPlayers().entrySet().stream()
+                    .map(entry -> {
+                        String playerId = entry.getKey();
+                        PlayerRound pr = entry.getValue();
+                        UUID spellUsed = pr.getSpellForRound(room.getCurrentRound());
+                        return new PlayerSpellDto(playerId, spellUsed, pr.getRoundsWon());
+                    })
+                    .collect(Collectors.toSet());
+
+            RoundResponseDto roundResponse = new RoundResponseDto(
+                    room.getCurrentRound(),
+                    gameOver,
+                    roundResult,
+                    playerDtos
+            );
+
+            for (String playerId : room.getPlayerIds()) {
+                messagingTemplate.convertAndSendToUser(
+                        playerId,
+                        WebSocketRoutes.QUEUE_ROUND_RESULT,
+                        roundResponse,
+                        buildHeaders(playerId)
+                );
+            }
+            // todo: delete room when gameOver true?
+            room.incrementCurrentRound();
+        }
+
     }
 
+    private MessageHeaders buildHeaders(String sessionId) {
+        SimpMessageHeaderAccessor accessor = SimpMessageHeaderAccessor.create();
+        accessor.setSessionId(sessionId);
+        accessor.setLeaveMutable(true);
+        return accessor.getMessageHeaders();
+    }
 }

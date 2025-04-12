@@ -1,6 +1,7 @@
 package com.devathon.griffindor_backend.dtos;
 
+import java.util.UUID;
+
 public record RoundRequestDto(
-        PlayerSpellDto player1,
-        PlayerSpellDto player2
+    UUID spellId
 ) {}

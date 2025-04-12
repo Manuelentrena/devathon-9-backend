@@ -3,61 +3,53 @@ package com.devathon.griffindor_backend.models;
 import java.util.*;
 
 import com.devathon.griffindor_backend.enums.RoomVisibility;
+import lombok.Getter;
 
+@Getter
 public class Room {
 
     public static final int MAX_PLAYERS = 2;
 
     private final UUID roomId;
-    private final Set<String> playerIds = new HashSet<>();
+    private final Map<String, PlayerRound> players = new HashMap<>();
     private final RoomVisibility visibility;
-
-    private final List<String> roundWinHistory = new ArrayList<>();
+    private int currentRound = 1;
 
     public Room(RoomVisibility visibility) {
         this.roomId = UUID.randomUUID();
         this.visibility = visibility;
     }
 
-    public UUID getRoomId() {
-        return roomId;
-    }
-
     public Set<String> getPlayerIds() {
-        return playerIds;
-    }
-
-    public RoomVisibility getVisibility() {
-        return visibility;
-    }
-
-    public List<String> getRoundWinHistory () {
-        return roundWinHistory;
+        return new HashSet<>(players.keySet());
     }
 
     public boolean addPlayer(String playerId) {
-        if (isFull())
+        if (isFull() || players.containsKey(playerId))
             return false;
-        return playerIds.add(playerId);
+        players.put(playerId, new PlayerRound());
+        return true;
     }
 
     public boolean removePlayer(String playerId) {
-        return playerIds.remove(playerId);
+        return players.remove(playerId) != null;
     }
 
     public boolean isFull() {
-        return playerIds.size() >= MAX_PLAYERS;
+        return players.size() >= MAX_PLAYERS;
     }
 
     public boolean containsPlayer(String playerId) {
-        return playerIds.contains(playerId);
+        return players.containsKey(playerId);
     }
 
-    public boolean isEmpty() {
-        return playerIds.isEmpty();
+    public boolean isEmpty() { return players.isEmpty();}
+
+    public PlayerRound getPlayerRound(String playerId) {
+        return players.get(playerId);
     }
 
-    public void addRoundWinner(String playerId) {
-        roundWinHistory.add(playerId);
+    public void incrementCurrentRound() {
+        currentRound++;
     }
 }
