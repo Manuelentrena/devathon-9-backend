@@ -67,7 +67,7 @@ public class GameSessionController {
                 String oldSessionId = jwt.validateAndGetUser(token);
 
                 if (playerService.existsBySessionId(oldSessionId)) {
-                    String newToken = jwt.generateToken(sessionId);
+                    String newToken = jwt.generateToken();
                     playerService.reconnectFromPreviousSession(oldSessionId, sessionId,
                             newToken);
                     // TODO: actualizar la room si existe donde estuviera el anterior jugador
@@ -88,7 +88,7 @@ public class GameSessionController {
             }
         }
 
-        String newToken = jwt.generateToken(sessionId);
+        String newToken = jwt.generateToken();
         playerService.addToken(sessionId, newToken);
         return new TokenIdResponseDto(newToken);
     }
