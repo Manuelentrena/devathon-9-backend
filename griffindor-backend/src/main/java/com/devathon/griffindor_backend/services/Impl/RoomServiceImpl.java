@@ -52,4 +52,20 @@ public class RoomServiceImpl implements RoomService {
         Room room = rooms.get(roomId);
         return room != null && room.containsPlayer(playerId);
     }
+
+    @Override
+    public boolean roomExist(UUID roomId) {
+        Room room = rooms.get(roomId);
+        return room != null && !room.isEmpty();
+    }
+
+    @Override
+    public Room getOneRoom(UUID roomId) {
+        Room room = rooms.get(roomId);
+        if (room == null) {
+            throw new IllegalArgumentException("Room not found with id: " + roomId);
+        }
+        return room;
+    }
+
 }

@@ -58,4 +58,8 @@ public interface RoomService {
      * @return true if the player is part of the room
      */
     boolean belongsRoom(UUID roomId, String playerId);
+
+    boolean roomExist(UUID roomId);
+
+    Room getOneRoom(UUID roomId);
 }

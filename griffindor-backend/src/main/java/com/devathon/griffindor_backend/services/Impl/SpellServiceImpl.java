@@ -1,14 +1,16 @@
 package com.devathon.griffindor_backend.services.Impl;
 
-import com.devathon.griffindor_backend.dtos.DuelResultDto;
+import com.devathon.griffindor_backend.dtos.*;
+import com.devathon.griffindor_backend.enums.RoundStatus;
+import com.devathon.griffindor_backend.models.PlayerRound;
+import com.devathon.griffindor_backend.models.Room;
 import com.devathon.griffindor_backend.models.Spell;
 import com.devathon.griffindor_backend.repositories.SpellRepository;
 import com.devathon.griffindor_backend.services.SpellService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class SpellServiceImpl implements SpellService {
@@ -23,20 +25,40 @@ public class SpellServiceImpl implements SpellService {
     }
 
     @Override
-    public DuelResultDto resolveDuel(UUID spellUser1, UUID spellUser2) {
+    public RoundResult resolveRound(Room room) {
 
-        Spell spell1 = spellRepository.findById(spellUser1).orElseThrow();
-        Spell spell2 = spellRepository.findById(spellUser2).orElseThrow();
+        List<String> playerIds = new ArrayList<>(room.getPlayerIds());
 
-        if (spell1.equals(spell2)) {
-            return new DuelResultDto(null, null, true);
+        String player1Id = playerIds.get(0);
+        String player2Id = playerIds.get(1);
+
+        PlayerRound player1Round = room.getPlayers().get(player1Id);
+        PlayerRound player2Round = room.getPlayers().get(player2Id);
+
+        int round = room.getCurrentRound();
+
+        UUID spell1Id = player1Round.getSpellForRound(round);
+        UUID spell2Id = player2Round.getSpellForRound(round);
+
+        if (spell1Id.equals(spell2Id)) {
+            return new RoundResult(null, RoundStatus.DRAW);
         }
 
-        if (spell1.getCounterSpell() != null && spell1.getCounterSpell().equals(spell2)) {
-            return new DuelResultDto(spell2, spell1, false);
-        }
+        Optional<Spell> spell1 = spellRepository.findById(spell1Id);
+        Optional<Spell> spell2 = spellRepository.findById(spell2Id);
 
-        return new DuelResultDto(spell1, spell2, false);
+        if (spell1.get().getCounterSpell() != null && spell1.get().getCounterSpell().equals(spell2.get())) {
+            player2Round.incrementRoundsWon();
+            return new RoundResult(player2Id, RoundStatus.WINNER);
+        } else {
+            player1Round.incrementRoundsWon();
+            return new RoundResult(player1Id, RoundStatus.WINNER);
+        }
+    }
+
+    @Override
+    public boolean spellExist(UUID spellId) {
+        return spellRepository.existsById(spellId);
     }
 
 }
