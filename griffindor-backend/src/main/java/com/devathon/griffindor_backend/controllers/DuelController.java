@@ -10,6 +10,10 @@ import com.devathon.griffindor_backend.models.Room;
 import com.devathon.griffindor_backend.services.ErrorService;
 import com.devathon.griffindor_backend.services.RoomService;
 import com.devathon.griffindor_backend.services.SpellService;
+
+import io.github.springwolf.core.asyncapi.annotations.AsyncMessage;
+import io.github.springwolf.core.asyncapi.annotations.AsyncOperation;
+import io.github.springwolf.core.asyncapi.annotations.AsyncPublisher;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.MessageHeaders;
@@ -18,10 +22,10 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -35,7 +39,25 @@ public class DuelController {
     private final RoomService roomService;
     private final SimpMessagingTemplate messagingTemplate;
 
+    private MessageHeaders buildHeaders(String sessionId) {
+        SimpMessageHeaderAccessor accessor = SimpMessageHeaderAccessor.create();
+        accessor.setSessionId(sessionId);
+        accessor.setLeaveMutable(true);
+        return accessor.getMessageHeaders();
+    }
+
     @MessageMapping(WebSocketRoutes.SUBMIT_ROUND)
+    @SendToUser(WebSocketRoutes.QUEUE_ROUND_RESULT)
+    @AsyncPublisher(operation = @AsyncOperation(
+            channelName = WebSocketRoutes.QUEUE_ROUND_RESULT,
+            description = "Notify players of the round result after all players have submitted their spells.",
+            payloadType = RoundResponseDto.class,
+            message = @AsyncMessage(
+                    messageId = "round-result-id",
+                    name = "RoundResponseDto",
+                    description = "Payload model for round results, including players' spells and current round status."
+            )
+    ))
     public void handleRound(@DestinationVariable UUID roomId, @Valid @Payload RoundRequestDto roundRequest, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
 
@@ -110,10 +132,5 @@ public class DuelController {
 
     }
 
-    private MessageHeaders buildHeaders(String sessionId) {
-        SimpMessageHeaderAccessor accessor = SimpMessageHeaderAccessor.create();
-        accessor.setSessionId(sessionId);
-        accessor.setLeaveMutable(true);
-        return accessor.getMessageHeaders();
-    }
+
 }
