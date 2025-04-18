@@ -2,6 +2,7 @@ package com.devathon.griffindor_backend.controllers;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 import com.devathon.griffindor_backend.Queues.RoomReadyQueue;
 import com.devathon.griffindor_backend.Queues.WaitlistQueue;
@@ -26,6 +27,7 @@ public class AssignRoomController {
     private final RoomReadyQueue roomReadyQueue;
 
     @MessageMapping(WebSocketRoutes.DUEL)
+    @SendToUser(WebSocketRoutes.USER_QUEUE_DUEL)
     public void assignRoom(SimpMessageHeaderAccessor headerAccessor) {
 
         String sessionId = headerAccessor.getSessionId();

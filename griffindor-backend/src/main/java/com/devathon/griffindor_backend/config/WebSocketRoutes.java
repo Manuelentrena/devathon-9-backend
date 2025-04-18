@@ -41,5 +41,6 @@ public class WebSocketRoutes {
 
     // Queue Paths Subscriber
     public static final String USER_QUEUE_LIST_PLAYERS = USER_PREFIX + QUEUE_PREFIX + LIST_PLAYERS;
+    public static final String USER_QUEUE_DUEL = USER_PREFIX + QUEUE_PREFIX + DUEL;
 
 }
