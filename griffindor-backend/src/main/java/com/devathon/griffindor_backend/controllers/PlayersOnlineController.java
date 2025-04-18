@@ -11,6 +11,10 @@ import com.devathon.griffindor_backend.dtos.PlayerRegisterDto;
 import com.devathon.griffindor_backend.models.Player;
 import com.devathon.griffindor_backend.services.ErrorService;
 import com.devathon.griffindor_backend.services.PlayerService;
+
+import io.github.springwolf.core.asyncapi.annotations.AsyncMessage;
+import io.github.springwolf.core.asyncapi.annotations.AsyncOperation;
+import io.github.springwolf.core.asyncapi.annotations.AsyncPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,6 +28,16 @@ public class PlayersOnlineController {
 
     @MessageMapping(WebSocketRoutes.REGISTER_USER)
     @SendToUser(WebSocketRoutes.QUEUE_REGISTER_USER)
+    @AsyncPublisher(operation = @AsyncOperation(
+            channelName = WebSocketRoutes.QUEUE_REGISTER_USER,
+            description = "Notify the player about the registration result.",
+            payloadType = PlayerDto.class,
+            message = @AsyncMessage(
+                    messageId = "player-registration-id",
+                    name = "PlayerDto",
+                    description = "Payload model for player registration response."
+            )
+    ))
     public PlayerDto registerPlayer(@Payload PlayerRegisterDto playerRegisterDto,
             SimpMessageHeaderAccessor headerAccessor) {
 
