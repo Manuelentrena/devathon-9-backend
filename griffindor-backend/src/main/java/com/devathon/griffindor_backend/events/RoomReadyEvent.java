@@ -1,6 +1,7 @@
 package com.devathon.griffindor_backend.events;
 
-import com.devathon.griffindor_backend.dtos.RoomIdResponseDto;
+import com.devathon.griffindor_backend.dtos.PlayerDto;
+import com.devathon.griffindor_backend.dtos.RoomReadyResponseDto;
 import com.devathon.griffindor_backend.models.Room;
 
 public class RoomReadyEvent {
@@ -21,7 +22,7 @@ public class RoomReadyEvent {
         return destination;
     }
 
-    public RoomIdResponseDto toDto() {
-        return new RoomIdResponseDto(room.getRoomId());
+    public RoomReadyResponseDto toDto(PlayerDto oponentDto) {
+        return new RoomReadyResponseDto(room.getRoomId(), oponentDto);
     }
 }
