@@ -2,5 +2,4 @@ package com.devathon.griffindor_backend.dtos;
 
 import java.util.UUID;
 
-public record RoomIdResponseDto(UUID room_id) {
-}
+public record RoomReadyResponseDto(UUID room_id, PlayerDto oponent) {}
