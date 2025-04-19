@@ -3,7 +3,9 @@ package com.devathon.griffindor_backend;
 import com.devathon.griffindor_backend.dtos.PlayerSpellDto;
 import com.devathon.griffindor_backend.dtos.RoundRequestDto;
 import com.devathon.griffindor_backend.dtos.RoundResponseDto;
+import com.devathon.griffindor_backend.dtos.RoundResult;
 import com.devathon.griffindor_backend.enums.RoomVisibility;
+import com.devathon.griffindor_backend.enums.RoundStatus;
 import com.devathon.griffindor_backend.models.Room;
 import com.devathon.griffindor_backend.models.Spell;
 import com.devathon.griffindor_backend.repositories.SpellRepository;
@@ -63,62 +65,36 @@ public class SpellServiceTests {
 
     }
 
-    // private RoundRequestDto createRoundRequest(UUID id1, UUID id2) {
-    // return new RoundRequestDto(
-    // new PlayerSpellDto("sessionId1", id1),
-    // new PlayerSpellDto("sessionId2", id2)
-    // );
-    // }
+    @Test
+    void testDuel_ExpelliarmusWins() {
+        room.getPlayers().get("sessionId1").addSpell(expelliarmus.getId());
+        room.getPlayers().get("sessionId2").addSpell(avadaKedavra.getId());
 
-    // @Test
-    // void testDuel_ExpelliarmusWins() {
-    // RoundRequestDto request = createRoundRequest(expelliarmus.getId(),
-    // avadaKedavra.getId());
+        RoundResult result = spellService.resolveRound(room);
 
-    // RoundResponseDto result = spellService.resolveRound(room, request);
+        assertEquals(RoundStatus.WINNER, result.status());
+        assertEquals("sessionId1", result.winner());
+    }
 
-    // assertFalse(result.isTie());
-    // assertEquals("sessionId1", result.winner().sessionId());
-    // assertEquals("Expelliarmus", result.winner().spell().getName());
-    // assertEquals("Avada Kedavra", result.loser().spell().getName());
-    // }
+    @Test
+    void testDuel_AvadaKadavraWins() {
+        room.getPlayers().get("sessionId1").addSpell(avadaKedavra.getId());
+        room.getPlayers().get("sessionId2").addSpell(protego.getId());
 
-    // @Test
-    // void testDuel_AvadaKadavraWins() {
-    // RoundRequestDto request = createRoundRequest(avadaKedavra.getId(),
-    // protego.getId());
+        RoundResult result = spellService.resolveRound(room);
 
-    // RoundResponseDto result = spellService.resolveRound(room, request);
+        assertEquals(RoundStatus.WINNER, result.status());
+        assertEquals("sessionId1", result.winner());
+    }
 
-    // assertFalse(result.isTie());
-    // assertEquals("sessionId1", result.winner().sessionId());
-    // assertEquals("Avada Kedavra", result.winner().spell().getName());
-    // }
+    @Test
+    void testDuel_isTie() {
+        room.getPlayers().get("sessionId1").addSpell(expelliarmus.getId());
+        room.getPlayers().get("sessionId2").addSpell(expelliarmus.getId());
 
-    // @Test
-    // void testDuel_isTie() {
-    // RoundRequestDto request = createRoundRequest(expelliarmus.getId(),
-    // expelliarmus.getId());
+        RoundResult result = spellService.resolveRound(room);
 
-    // RoundResponseDto result = spellService.resolveRound(room, request);
-
-    // assertTrue(result.isTie());
-    // assertNull(result.winner());
-    // assertNull(result.loser());
-    // }
-
-    // @Test
-    // void testDuel_spellNotFound_shouldThrowException() {
-    // UUID fakeId = UUID.randomUUID();
-    // when(spellRepository.findById(fakeId)).thenReturn(Optional.empty());
-
-    // RoundRequestDto request = createRoundRequest(fakeId, expelliarmus.getId());
-
-    // Exception exception = assertThrows(EntityNotFoundException.class, () -> {
-    // spellService.resolveRound(room, request);
-    // });
-
-    // assertTrue(exception.getMessage().contains("Spell not found"));
-    // }
-
+        assertEquals(RoundStatus.DRAW, result.status());
+        assertNull(result.winner());
+    }
 }
