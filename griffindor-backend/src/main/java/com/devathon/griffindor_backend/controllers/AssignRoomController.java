@@ -58,9 +58,27 @@ public class AssignRoomController {
                 return;
             }
 
-            boolean joined = roomService.joinRoom(room.getRoomId(), sessionId);
+            if (roomService.belongsRoom(room.getRoomId(), sessionId)) {
+                waitlistQueue.addRoom(room);
+                errorService.sendErrorToSession(sessionId, "PLAYER_IN_ROOM", "You are already in the room");
+                return;
+            }
 
-            if (!joined) {
+            var player = playerService.getPlayerBySessionId(sessionId);
+
+            if (player.getSessionState() == PlayerSessionState.WAITING) {
+                waitlistQueue.addRoom(room);
+                errorService.sendErrorToSession(sessionId, "PLAYER_IS_WAITING", "You are already waiting");
+                return;
+            }
+
+            if (player.getSessionState() == PlayerSessionState.FIGHTING) {
+                waitlistQueue.addRoom(room);
+                errorService.sendErrorToSession(sessionId, "PLAYER_IS_FIGHTING", "You are already fighting");
+                return;
+            }
+
+            if (!roomService.joinRoom(room.getRoomId(), sessionId)) {
                 errorService.sendErrorToSession(sessionId, "ROOM_FULL", "The room is already full");
                 return;
             }

@@ -52,4 +52,16 @@ public class Room {
     public void incrementCurrentRound() {
         currentRound++;
     }
+
+    public String getOponentOf(String sessionId) {
+        if (!players.containsKey(sessionId)) {
+            throw new IllegalArgumentException("The session ID is not part of this room.");
+        }
+    
+        return players.keySet().stream()
+                .filter(id -> !id.equals(sessionId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No oponent found in the room"));
+    }
+    
 }
