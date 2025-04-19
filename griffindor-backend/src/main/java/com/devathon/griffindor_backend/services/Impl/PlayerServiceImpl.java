@@ -125,6 +125,14 @@ public class PlayerServiceImpl implements PlayerService {
         return players.containsKey(sessionId);
     }
 
+    public Player getPlayerBySessionId(String sessionId) {
+        Player player = players.get(sessionId);
+        if (player == null) {
+            throw new RuntimeException("Player not found");
+        }
+        return player;
+    }
+
     /* EVENTS */
 
     public void enqueuePlayersConnectedEvent(String sessionId) {

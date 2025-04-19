@@ -121,6 +121,15 @@ public interface PlayerService {
      */
     void reconnectFromPreviousSession(String oldSessionId, String newSessionId, String newToken);
 
+
+    /**
+     * Retrieves a player by their session ID.
+     *
+     * @param sessionId Session identifier
+     * @return The player associated with the session ID
+     */
+    Player getPlayerBySessionId(String sessionId);
+
     /*
      * ============================
      * EVENTS
