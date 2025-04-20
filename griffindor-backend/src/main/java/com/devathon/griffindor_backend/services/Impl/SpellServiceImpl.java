@@ -26,32 +26,31 @@ public class SpellServiceImpl implements SpellService {
 
     @Override
     public RoundResult resolveRound(Room room) {
-
         List<String> playerIds = new ArrayList<>(room.getPlayerIds());
-
         String player1Id = playerIds.get(0);
         String player2Id = playerIds.get(1);
 
-        PlayerRound player1Round = room.getPlayers().get(player1Id);
-        PlayerRound player2Round = room.getPlayers().get(player2Id);
-
         int round = room.getCurrentRound();
 
-        UUID spell1Id = player1Round.getSpellForRound(round);
-        UUID spell2Id = player2Round.getSpellForRound(round);
+        UUID spell1Id = room.getPlayers().get(player1Id).getSpellForRound(round);
+        UUID spell2Id = room.getPlayers().get(player2Id).getSpellForRound(round);
 
         if (spell1Id.equals(spell2Id)) {
             return new RoundResult(null, RoundStatus.DRAW);
         }
 
-        Optional<Spell> spell1 = spellRepository.findById(spell1Id);
-        Optional<Spell> spell2 = spellRepository.findById(spell2Id);
+        Spell spell1 = spellRepository.findById(spell1Id)
+                .orElseThrow(() -> new IllegalStateException("Spell not found: " + spell1Id));
+        Spell spell2 = spellRepository.findById(spell2Id)
+                .orElseThrow(() -> new IllegalStateException("Spell not found: " + spell2Id));
 
-        if (spell1.get().getCounterSpell() != null && spell1.get().getCounterSpell().equals(spell2.get())) {
-            player2Round.incrementRoundsWon();
+        Spell counterOfSpell1 = spell1.getCounterSpell();
+
+        if (counterOfSpell1 != null && counterOfSpell1.getId().equals(spell2.getId())) {
+            room.getPlayers().get(player2Id).incrementRoundsWon();
             return new RoundResult(player2Id, RoundStatus.WINNER);
         } else {
-            player1Round.incrementRoundsWon();
+            room.getPlayers().get(player1Id).incrementRoundsWon();
             return new RoundResult(player1Id, RoundStatus.WINNER);
         }
     }
