@@ -5,9 +5,11 @@ import com.devathon.griffindor_backend.dtos.PlayerSpellDto;
 import com.devathon.griffindor_backend.dtos.RoundRequestDto;
 import com.devathon.griffindor_backend.dtos.RoundResponseDto;
 import com.devathon.griffindor_backend.dtos.RoundResult;
+import com.devathon.griffindor_backend.enums.PlayerSessionState;
 import com.devathon.griffindor_backend.models.PlayerRound;
 import com.devathon.griffindor_backend.models.Room;
 import com.devathon.griffindor_backend.services.ErrorService;
+import com.devathon.griffindor_backend.services.PlayerService;
 import com.devathon.griffindor_backend.services.RoomService;
 import com.devathon.griffindor_backend.services.SpellService;
 import jakarta.validation.Valid;
@@ -33,6 +35,7 @@ public class DuelController {
     private final SpellService spellService;
     private final ErrorService errorService;
     private final RoomService roomService;
+    private final PlayerService playerService;
     private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping(WebSocketRoutes.SUBMIT_ROUND)
@@ -59,19 +62,23 @@ public class DuelController {
             return;
         }
 
+        // Get the room and current player round
         Room room = roomService.getOneRoom(roomId);
-
         PlayerRound playerRound = room.getPlayers().get(sessionId);
 
+        // Store the selected spell for the round
         playerRound.addSpell(roundRequest.spellId());
 
+        // Count how many players have submitted spells for the current round
         long playersReady = room.getPlayers().values().stream()
                 .filter(p -> p.getSpells().size() == room.getCurrentRound())
                 .count();
 
+        // If all players have submitted, resolve the round
         if (playersReady == Room.MAX_PLAYERS) {
             RoundResult roundResult = spellService.resolveRound(room);
 
+            // Check if any player has won the duel (3 rounds)
             String playerWinnerDuel = room.getPlayers().entrySet().stream()
                     .filter(entry -> entry.getValue().getRoundsWon() >= 3)
                     .map(Map.Entry::getKey)
@@ -80,6 +87,7 @@ public class DuelController {
 
             boolean gameOver = playerWinnerDuel != null;
 
+            // Build DTOs for each player
             Set<PlayerSpellDto> playerDtos = room.getPlayers().entrySet().stream()
                     .map(entry -> {
                         String playerId = entry.getKey();
@@ -89,6 +97,7 @@ public class DuelController {
                     })
                     .collect(Collectors.toSet());
 
+            // Build round response with current round info
             RoundResponseDto roundResponse = new RoundResponseDto(
                     room.getCurrentRound(),
                     gameOver,
@@ -96,6 +105,7 @@ public class DuelController {
                     playerDtos
             );
 
+            // Send round result to each player in the room
             for (String playerId : room.getPlayerIds()) {
                 messagingTemplate.convertAndSendToUser(
                         playerId,
@@ -104,7 +114,14 @@ public class DuelController {
                         buildHeaders(playerId)
                 );
             }
-            // todo: delete room when gameOver true?
+
+            // If the game is over, delete the room
+            if (gameOver) {
+                room.getPlayerIds().forEach(playerId -> playerService.updatePlayerSessionState(playerId, PlayerSessionState.CONNECT));
+                roomService.deleteRoom(roomId);
+            }
+
+            // Advance to the next round
             room.incrementCurrentRound();
         }
 
