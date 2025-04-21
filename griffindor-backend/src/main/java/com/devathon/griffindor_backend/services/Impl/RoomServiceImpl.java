@@ -68,4 +68,12 @@ public class RoomServiceImpl implements RoomService {
         return room;
     }
 
+    @Override
+    public void deleteRoom(UUID roomId) {
+        if (!rooms.containsKey(roomId)) {
+            throw new IllegalArgumentException("Room not found with id: " + roomId);
+        }
+        rooms.remove(roomId);
+    }
+
 }

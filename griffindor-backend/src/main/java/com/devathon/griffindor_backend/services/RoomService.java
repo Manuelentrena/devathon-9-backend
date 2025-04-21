@@ -59,7 +59,27 @@ public interface RoomService {
      */
     boolean belongsRoom(UUID roomId, String playerId);
 
+    /**
+     * Checks whether the specified room exists.
+     *
+     * @param roomId UUID of the room
+     * @return true if the room exists
+     */
     boolean roomExist(UUID roomId);
 
+    /**
+     * Retrieves a room by its ID.
+     *
+     * @param roomId UUID of the room
+     * @return the corresponding Room object
+     * @throws IllegalArgumentException if the room does not exist
+     */
     Room getOneRoom(UUID roomId);
+
+    /**
+     * Deletes the room with the specified ID.
+     *
+     * @param roomId UUID of the room to delete
+     */
+    void deleteRoom(UUID roomId);
 }
