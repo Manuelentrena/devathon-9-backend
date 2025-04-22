@@ -66,6 +66,12 @@ public class DuelController {
         Room room = roomService.getOneRoom(roomId);
         PlayerRound playerRound = room.getPlayers().get(sessionId);
 
+        // Check if the player has already cast a spell for the current round
+        if (room.getCurrentRound() == playerRound.getSpells().size()) {
+            errorService.sendErrorToSession(sessionId, "SPELL_ALREADY_SENT", "You already cast a spell this round");
+            return;
+        }
+
         // Store the selected spell for the round
         playerRound.addSpell(roundRequest.spellId());
 
