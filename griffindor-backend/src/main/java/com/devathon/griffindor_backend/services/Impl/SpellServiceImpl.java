@@ -35,6 +35,23 @@ public class SpellServiceImpl implements SpellService {
         UUID spell1Id = room.getPlayers().get(player1Id).getSpellForRound(round);
         UUID spell2Id = room.getPlayers().get(player2Id).getSpellForRound(round);
 
+        // If both spells are null, it's a draw
+        if (spell1Id == null && spell2Id == null) {
+            return new RoundResult(null, RoundStatus.DRAW);
+        }
+
+        // If one spell is null, that player loses
+        if (spell1Id == null) {
+            room.getPlayers().get(player2Id).incrementRoundsWon();
+            return new RoundResult(player2Id, RoundStatus.WINNER);
+        }
+
+        if (spell2Id == null) {
+            room.getPlayers().get(player1Id).incrementRoundsWon();
+            return new RoundResult(player1Id, RoundStatus.WINNER);
+        }
+
+        // If both spells are the same, it's a draw
         if (spell1Id.equals(spell2Id)) {
             return new RoundResult(null, RoundStatus.DRAW);
         }
