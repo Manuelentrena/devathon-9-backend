@@ -57,7 +57,7 @@ public class DuelController {
             return;
         }
 
-        if (!spellService.spellExist(roundRequest.spellId())) {
+        if (roundRequest.spellId() != null && !spellService.spellExist(roundRequest.spellId())) {
             errorService.sendErrorToSession(sessionId, "SPELL_NOT_FOUND", "Spell not found");
             return;
         }
