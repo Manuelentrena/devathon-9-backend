@@ -66,71 +66,73 @@ public class DuelController {
         Room room = roomService.getOneRoom(roomId);
         PlayerRound playerRound = room.getPlayers().get(sessionId);
 
-        // Check if the player has already cast a spell for the current round
-        if (room.getCurrentRound() == playerRound.getSpells().size()) {
-            errorService.sendErrorToSession(sessionId, "SPELL_ALREADY_SENT", "You already cast a spell this round");
-            return;
-        }
+        synchronized (room) {
+            // Check if the player has already cast a spell for the current round
+            if (room.getCurrentRound() == playerRound.getSpells().size()) {
+                errorService.sendErrorToSession(sessionId, "SPELL_ALREADY_SENT", "You already cast a spell this round");
+                return;
+            }
 
-        // Store the selected spell for the round
-        playerRound.addSpell(roundRequest.spellId());
+            // Store the selected spell for the round
+            playerRound.addSpell(roundRequest.spellId());
 
-        // Count how many players have submitted spells for the current round
-        long playersReady = room.getPlayers().values().stream()
-                .filter(p -> p.getSpells().size() == room.getCurrentRound())
-                .count();
+            // Count how many players have submitted spells for the current round
+            long playersReady = room.getPlayers().values().stream()
+                    .filter(p -> p.getSpells().size() == room.getCurrentRound())
+                    .count();
 
-        // If all players have submitted, resolve the round
-        if (playersReady == Room.MAX_PLAYERS) {
-            RoundResult roundResult = spellService.resolveRound(room);
+            // If all players have submitted, resolve the round
+            if (playersReady == Room.MAX_PLAYERS) {
+                RoundResult roundResult = spellService.resolveRound(room);
 
-            // Check if any player has won the duel (3 rounds)
-            String playerWinnerDuel = room.getPlayers().entrySet().stream()
-                    .filter(entry -> entry.getValue().getRoundsWon() >= 3)
-                    .map(Map.Entry::getKey)
-                    .findFirst()
-                    .orElse(null);
+                // Check if any player has won the duel (3 rounds)
+                String playerWinnerDuel = room.getPlayers().entrySet().stream()
+                        .filter(entry -> entry.getValue().getRoundsWon() >= 3)
+                        .map(Map.Entry::getKey)
+                        .findFirst()
+                        .orElse(null);
 
-            boolean gameOver = playerWinnerDuel != null;
+                boolean gameOver = playerWinnerDuel != null;
 
-            // Build DTOs for each player
-            Set<PlayerSpellDto> playerDtos = room.getPlayers().entrySet().stream()
-                    .map(entry -> {
-                        String playerId = entry.getKey();
-                        PlayerRound pr = entry.getValue();
-                        UUID spellUsed = pr.getSpellForRound(room.getCurrentRound());
-                        return new PlayerSpellDto(playerId, spellUsed, pr.getRoundsWon());
-                    })
-                    .collect(Collectors.toSet());
+                // Build DTOs for each player
+                Set<PlayerSpellDto> playerDtos = room.getPlayers().entrySet().stream()
+                        .map(entry -> {
+                            String playerId = entry.getKey();
+                            PlayerRound pr = entry.getValue();
+                            UUID spellUsed = pr.getSpellForRound(room.getCurrentRound());
+                            return new PlayerSpellDto(playerId, spellUsed, pr.getRoundsWon());
+                        })
+                        .collect(Collectors.toSet());
 
-            // Build round response with current round info
-            RoundResponseDto roundResponse = new RoundResponseDto(
-                    room.getCurrentRound(),
-                    gameOver,
-                    roundResult,
-                    playerDtos
-            );
-
-            // Send round result to each player in the room
-            for (String playerId : room.getPlayerIds()) {
-                messagingTemplate.convertAndSendToUser(
-                        playerId,
-                        WebSocketRoutes.QUEUE_ROUND_RESULT,
-                        roundResponse,
-                        buildHeaders(playerId)
+                // Build round response with current round info
+                RoundResponseDto roundResponse = new RoundResponseDto(
+                        room.getCurrentRound(),
+                        gameOver,
+                        roundResult,
+                        playerDtos
                 );
-            }
 
-            // If the game is over, delete the room
-            if (gameOver) {
-                room.getPlayerIds().forEach(playerId -> playerService.updatePlayerSessionState(playerId, PlayerSessionState.CONNECT));
-                roomService.deleteRoom(roomId);
-            }
+                // Send round result to each player in the room
+                for (String playerId : room.getPlayerIds()) {
+                    messagingTemplate.convertAndSendToUser(
+                            playerId,
+                            WebSocketRoutes.QUEUE_ROUND_RESULT,
+                            roundResponse,
+                            buildHeaders(playerId)
+                    );
+                }
 
-            // Advance to the next round
-            room.incrementCurrentRound();
+                // If the game is over, delete the room
+                if (gameOver) {
+                    room.getPlayerIds()
+                            .forEach(playerId -> playerService.updatePlayerSessionState(playerId, PlayerSessionState.CONNECT));
+                    roomService.deleteRoom(roomId);
+                }
+
+                // Advance to the next round
+                room.incrementCurrentRound();
+            }
         }
-
     }
 
     private MessageHeaders buildHeaders(String sessionId) {
