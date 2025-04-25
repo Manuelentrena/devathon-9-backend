@@ -127,6 +127,7 @@ public class DuelController {
                     room.getPlayerIds()
                             .forEach(playerId -> playerService.updatePlayerSessionState(playerId, PlayerSessionState.CONNECT));
                     roomService.deleteRoom(roomId);
+                    return;
                 }
 
                 // Advance to the next round
