@@ -1,0 +1,145 @@
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f8f9fa;
+  color: #333;
+  margin: 0;
+  padding: 0px 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px 20px;
+  width: 100%;
+  background: #e9ecef;
+}
+
+.header svg {
+  margin-right: 10px;
+}
+
+.header span {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.container-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin-top: 80px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  cursor: pointer;
+  background: #e9ecef;
+}
+
+.card-header span {
+  font-size: 20px;
+}
+
+.card-header button {
+  border: none;
+  background: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.card-content {
+  display: block;
+  padding: 15px;
+  background: #fff;
+}
+
+.json-container {
+  font-family: monospace;
+  white-space: pre-wrap;
+  padding: 10px;
+  background: #f1f1f1;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #e9ecef;
+  color: #333;
+}
+
+.buttons {
+  display: flex;
+}
+
+.buttons button {
+  padding: 10px 20px;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  flex: 1;
+}
+
+#connectBtn {
+  background: #4caf50;
+  color: white;
+}
+
+#disconnectBtn {
+  background: #dc3545;
+  color: white;
+}
+
+.disabled {
+  background: grey !important;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.input-container label {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.input-container input {
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background: #f1f1f1;
+  color: #333;
+  pointer-events: none;
+}
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.copy-button {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+textarea {
+  padding: 0.5rem;
+}
